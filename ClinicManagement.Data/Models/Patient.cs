@@ -1,7 +1,10 @@
-﻿using System;
+﻿// Location: C:\Users\AdrianPanaga\NewClinicApi\ClinicManagement.Data\Models\Patient.cs
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations; // For data annotations
-using System.ComponentModel.DataAnnotations.Schema; // For column mapping if needed
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity; // Assuming User is in this project or ClinicManagement.Data.Models
 
 namespace ClinicManagement.Data.Models
 {
@@ -14,40 +17,34 @@ namespace ClinicManagement.Data.Models
         }
 
         [Key]
-        [Column("PatientID")]
         public int PatientId { get; set; }
 
-        [Required]
         [StringLength(50)]
-        public string FirstName { get; set; } = null!;
-
-        [Required]
-        [StringLength(50)]
-        public string LastName { get; set; } = null!;
+        public string? FirstName { get; set; }
 
         [StringLength(50)]
         public string? MiddleName { get; set; }
 
-        // Changed to DateOnly to match DTOs and ensure consistency
-        public DateOnly DateOfBirth { get; set; }
+        [StringLength(50)]
+        public string? LastName { get; set; }
 
-        [Required]
         [StringLength(10)]
-        public string Gender { get; set; } = null!; // e.g., "Male", "Female", "Other"
+        public string? Gender { get; set; }
 
-        [Required]
-        [StringLength(20)]
-        public string ContactNumber { get; set; } = null!;
-
-        [Required]
-        [StringLength(100)]
-        public string Email { get; set; } = null!;
+        [Column(TypeName = "date")]
+        public DateTime? DateOfBirth { get; set; }
 
         [StringLength(255)]
         public string? Address { get; set; }
 
+        [StringLength(20)]
+        public string? ContactNumber { get; set; }
+
+        [StringLength(100)]
+        public string? Email { get; set; }
+
         [StringLength(5)]
-        public string? BloodType { get; set; } // e.g., "A+", "O-", etc.
+        public string? BloodType { get; set; }
 
         [StringLength(100)]
         public string? EmergencyContactName { get; set; }
@@ -64,18 +61,16 @@ namespace ClinicManagement.Data.Models
         [Column(TypeName = "datetime")]
         public DateTime? UpdatedAt { get; set; }
 
-        // --- NEW/UPDATED: Link to User model ---
-        // Marking as nullable (int?) to allow patients without an immediate linked user account
-        // The foreign key mapping will be in ClinicContext.
-        public int? UserId { get; set; }
+        public int? UserId { get; set; } // Foreign Key to User (IdentityUser)
 
+        // --- NEW PROPERTY FOR SOFT DELETE ---
+        public bool IsDeleted { get; set; } = false; // Default to false (not deleted)
+
+        // Navigation Properties
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }
-        // --- END NEW/UPDATED ---
 
-        [InverseProperty("Patient")]
         public virtual ICollection<Appointment> Appointments { get; set; }
-        [InverseProperty("Patient")]
         public virtual ICollection<MedicalRecord> MedicalRecords { get; set; }
     }
 }

@@ -12,10 +12,10 @@ using System.Security.Claims;
 
 using ClinicManagement.Data.Context;
 using ClinicManagement.Data.Models;
-using ClinicManagement.ApiNew.DTOs.MedicalRecords;
-using ClinicManagement.ApiNew.DTOs.Appointments;
-using ClinicManagement.ApiNew.DTOs.Patients;
-using ClinicManagement.ApiNew.DTOs.StaffDetails;
+using ClinicManagement.ApiNew.DTOs.MedicalRecords; // Import MedicalRecords DTOs
+using ClinicManagement.ApiNew.DTOs.Appointments; // For AppointmentDto
+using ClinicManagement.ApiNew.DTOs.Patients;    // For PatientDetailsDto
+using ClinicManagement.ApiNew.DTOs.StaffDetails; // For StaffDetailDto
 // If you have a Services DTO, add its using here, e.g.:
 // using ClinicManagement.ApiNew.DTOs.Services;
 
@@ -23,7 +23,7 @@ namespace ClinicManagement.ApiNew.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize] // All actions in this controller require an authenticated user by default
     public class MedicalRecordsController : ControllerBase
     {
         private readonly ClinicManagementDbContext _context;
@@ -43,19 +43,31 @@ namespace ClinicManagement.ApiNew.Controllers
                 AppointmentId = medicalRecord.AppointmentId,
                 StaffId = medicalRecord.StaffId,
                 ServiceId = medicalRecord.ServiceId,
-                Diagnosis = medicalRecord.Diagnosis,
-                Treatment = medicalRecord.Treatment,
-                Prescription = medicalRecord.Prescription,
+                // FIX: Use null-coalescing to assign an empty string if null, resolving CS8601.
+                Diagnosis = medicalRecord.Diagnosis ?? "",
+                Treatment = medicalRecord.Treatment ?? "",
+                Prescription = medicalRecord.Prescription ?? "",
                 CreatedAt = medicalRecord.CreatedAt,
                 UpdatedAt = medicalRecord.UpdatedAt,
-                Patient = medicalRecord.Patient != null ? new PatientDetailsDto
+                Patient = medicalRecord.Patient != null ? new PatientDetailsDto // Assuming PatientDetailsDto
                 {
                     PatientId = medicalRecord.Patient.PatientId,
                     FirstName = medicalRecord.Patient.FirstName,
+                    MiddleName = medicalRecord.Patient.MiddleName,
                     LastName = medicalRecord.Patient.LastName,
+                    Gender = medicalRecord.Patient.Gender,
+                    DateOfBirth = medicalRecord.Patient.DateOfBirth != null ? DateOnly.FromDateTime(medicalRecord.Patient.DateOfBirth.Value) : (DateOnly?)null,
+                    Address = medicalRecord.Patient.Address,
                     ContactNumber = medicalRecord.Patient.ContactNumber,
-                    Email = medicalRecord.Patient.Email
-                    // Map other properties as needed from your Patient model
+                    Email = medicalRecord.Patient.Email,
+                    BloodType = medicalRecord.Patient.BloodType,
+                    EmergencyContactName = medicalRecord.Patient.EmergencyContactName,
+                    EmergencyContactNumber = medicalRecord.Patient.EmergencyContactNumber,
+                    PhotoUrl = medicalRecord.Patient.PhotoUrl,
+                    CreatedAt = medicalRecord.Patient.CreatedAt,
+                    UpdatedAt = medicalRecord.Patient.UpdatedAt,
+                    UserId = medicalRecord.Patient.UserId,
+                    IsDeleted = medicalRecord.Patient.IsDeleted
                 } : null,
                 Staff = medicalRecord.Staff != null ? new StaffDetailDto
                 {
@@ -70,8 +82,8 @@ namespace ClinicManagement.ApiNew.Controllers
                 {
                     AppointmentId = medicalRecord.Appointment.AppointmentId,
                     AppointmentDateTime = medicalRecord.Appointment.AppointmentDateTime,
-                    Status = medicalRecord.Appointment.Status,
-                    PatientId = medicalRecord.Appointment.PatientId,
+                    Status = medicalRecord.Appointment.Status ?? "",
+                    PatientId = medicalRecord.Appointment.PatientId ?? 0,
                     DoctorId = medicalRecord.Appointment.DoctorId
                     // Map other properties as needed from your Appointment model
                 } : null,
@@ -86,6 +98,7 @@ namespace ClinicManagement.ApiNew.Controllers
                 // } : null
             };
         }
+
 
         // GET: api/MedicalRecords
         /// <summary>
@@ -160,14 +173,18 @@ namespace ClinicManagement.ApiNew.Controllers
             }
 
             // Custom authorization logic for Patients:
+            // If the user is in the "Patient" role, ensure they are only requesting their own record.
             if (User.IsInRole("Patient"))
             {
+                // Get the UserID from the authenticated user's claims
                 var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
                 if (currentUserIdClaim == null || !int.TryParse(currentUserIdClaim.Value, out int currentUserId))
                 {
                     return Unauthorized("Could not identify current user.");
                 }
 
+                // Check if the current user (patient) is linked to this medical record's patient
+                // This assumes Patient model has a UserId property linking to IdentityUser.Id
                 var patientLinkedToRecord = await _context.Patients
                                                             .Where(p => p.PatientId == medicalRecord.PatientId)
                                                             .Select(p => p.UserId)
@@ -204,6 +221,7 @@ namespace ClinicManagement.ApiNew.Controllers
                     return Unauthorized("Could not identify current user.");
                 }
 
+                // Find the patient ID associated with the current user ID
                 var patientIdForCurrentUser = await _context.Patients
                                                               .Where(p => p.UserId == currentUserId)
                                                               .Select(p => p.PatientId)
@@ -326,14 +344,8 @@ namespace ClinicManagement.ApiNew.Controllers
 
             var medicalRecord = await _context.MedicalRecords.FindAsync(id);
             if (medicalRecord == null)
-            {
                 return NotFound();
-            }
 
-            // Optional: Add fine-grained authorization here for Doctors/Nurses modifying records
-            // Example: ensure they are assigned to this patient or record.
-            // if ((User.IsInRole("Doctor") || User.IsInRole("Nurse")) && medicalRecord.StaffId != GetCurrentStaffId())
-            // { return Forbid(); }
 
             medicalRecord.PatientId = updateMedicalRecordsDto.PatientId;
             medicalRecord.AppointmentId = updateMedicalRecordsDto.AppointmentId ?? 0;
@@ -342,7 +354,7 @@ namespace ClinicManagement.ApiNew.Controllers
             medicalRecord.Diagnosis = updateMedicalRecordsDto.Diagnosis;
             medicalRecord.Treatment = updateMedicalRecordsDto.Treatment;
             medicalRecord.Prescription = updateMedicalRecordsDto.Prescription;
-            medicalRecord.UpdatedAt = DateTime.UtcNow; // Set update timestamp
+            medicalRecord.UpdatedAt = DateTime.UtcNow;
 
             _context.Entry(medicalRecord).State = EntityState.Modified;
 
@@ -381,21 +393,6 @@ namespace ClinicManagement.ApiNew.Controllers
                 return Problem("Entity set 'ClinicManagementDbContext.MedicalRecords' is null.");
             }
 
-            // Optional: Verify that the StaffId provided in the DTO matches the authenticated user's StaffId
-            // if ((User.IsInRole("Doctor") || User.IsInRole("Nurse")))
-            // {
-            //     var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            //     if (currentUserIdClaim == null || !int.TryParse(currentUserIdClaim.Value, out int currentUserId))
-            //     {
-            //         return Unauthorized("Could not identify current user.");
-            //     }
-            //     var staffIdForCurrentUser = await _context.StaffDetails.Where(sd => sd.UserId == currentUserId).Select(sd => sd.StaffId).FirstOrDefaultAsync();
-            //     if (staffIdForCurrentUser == 0 || staffIdForCurrentUser != createMedicalRecordsDto.StaffId)
-            //     {
-            //         return Forbid("You can only create medical records on behalf of your own Staff ID.");
-            //     }
-            // }
-
             var medicalRecord = new MedicalRecord
             {
                 PatientId = createMedicalRecordsDto.PatientId,
@@ -431,16 +428,15 @@ namespace ClinicManagement.ApiNew.Controllers
         /// Requires Admin role.
         /// </summary>
         /// <param name="id">The ID of the medical record to soft delete.</param>
-        /// <returns>NoContent if successful, or NotFound if the record does not exist.</returns>
+        /// <returns>NoContent if successful, or NotFound if the record does not exist or is already deleted.</returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")] // Only Admin can soft delete medical records
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SoftDeleteMedicalRecord(int id)
         {
             if (_context.MedicalRecords == null)
             {
                 return NotFound();
             }
-            // Use IgnoreQueryFilters to find the record even if it's already soft-deleted
             var medicalRecord = await _context.MedicalRecords.IgnoreQueryFilters().FirstOrDefaultAsync(mr => mr.RecordId == id);
             if (medicalRecord == null)
             {
@@ -452,13 +448,13 @@ namespace ClinicManagement.ApiNew.Controllers
                 return BadRequest("Medical record is already soft-deleted.");
             }
 
-            medicalRecord.IsDeleted = true; // Mark as deleted
-            medicalRecord.UpdatedAt = DateTime.UtcNow; // Update timestamp
+            medicalRecord.IsDeleted = true;
+            medicalRecord.UpdatedAt = DateTime.UtcNow;
 
             _context.Entry(medicalRecord).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return NoContent(); // Indicate successful soft delete
+            return NoContent();
         }
 
         // POST: api/MedicalRecords/restore/5
@@ -469,14 +465,13 @@ namespace ClinicManagement.ApiNew.Controllers
         /// <param name="id">The ID of the medical record to restore.</param>
         /// <returns>NoContent if successful, or NotFound if the record does not exist or is not deleted.</returns>
         [HttpPost("restore/{id}")]
-        [Authorize(Roles = "Admin")] // Only Admin can restore medical records
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RestoreMedicalRecord(int id)
         {
             if (_context.MedicalRecords == null)
             {
                 return NotFound();
             }
-            // Use IgnoreQueryFilters to find the record even if it's soft-deleted
             var medicalRecord = await _context.MedicalRecords.IgnoreQueryFilters().FirstOrDefaultAsync(mr => mr.RecordId == id);
             if (medicalRecord == null)
             {
@@ -488,20 +483,18 @@ namespace ClinicManagement.ApiNew.Controllers
                 return BadRequest("Medical record is not soft-deleted.");
             }
 
-            medicalRecord.IsDeleted = false; // Mark as not deleted
-            medicalRecord.UpdatedAt = DateTime.UtcNow; // Update timestamp
+            medicalRecord.IsDeleted = false;
+            medicalRecord.UpdatedAt = DateTime.UtcNow;
 
             _context.Entry(medicalRecord).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return NoContent(); // Indicate successful restore
+            return NoContent();
         }
 
 
         private bool MedicalRecordExists(int id)
         {
-            // Use IgnoreQueryFilters here if you want MedicalRecordExists to consider soft-deleted records as 'existing'
-            // Otherwise, it will only return true for active records due to the global filter.
             return (_context.MedicalRecords?.Any(e => e.RecordId == id)).GetValueOrDefault();
         }
     }

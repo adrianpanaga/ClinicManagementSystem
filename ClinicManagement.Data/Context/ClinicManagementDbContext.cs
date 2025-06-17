@@ -1,4 +1,4 @@
-﻿// Location: C:\Users\AdrianPanaga\NewClinicApi\ClinicManagement.Data\Context\ClinicManagementDbContext.cs
+﻿// Location: C:\Users\AdrianPanaga\NewClinicApi\ClinicManagement.Data\Context/ClinicManagementDbContext.cs
 
 using System;
 using System.Collections.Generic;
@@ -19,10 +19,10 @@ namespace ClinicManagement.Data.Context
         public virtual DbSet<Appointment> Appointments { get; set; } = null!;
         public virtual DbSet<MedicalRecord> MedicalRecords { get; set; } = null!;
         public virtual DbSet<Patient> Patients { get; set; } = null!;
-        public virtual DbSet<Role> Roles { get; set; } = null!;
+        public new virtual DbSet<Role> Roles { get; set; } = null!;
         public virtual DbSet<Service> Services { get; set; } = null!;
         public virtual DbSet<StaffDetail> StaffDetails { get; set; } = null!;
-        public virtual DbSet<User> Users { get; set; } = null!;
+        public new virtual DbSet<User> Users { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,8 +38,10 @@ namespace ClinicManagement.Data.Context
             modelBuilder.Entity<IdentityUserRole<int>>().ToTable("UserRoles");
 
             // --- Medical Record Soft Delete Global Query Filter ---
-            // This ensures that all queries to MedicalRecords automatically exclude IsDeleted = true records
             modelBuilder.Entity<MedicalRecord>().HasQueryFilter(mr => !mr.IsDeleted);
+
+            // --- Patient Soft Delete Global Query Filter ---
+            modelBuilder.Entity<Patient>().HasQueryFilter(p => !p.IsDeleted);
 
             // --- User entity configuration ---
             modelBuilder.Entity<User>(entity =>
@@ -75,7 +77,7 @@ namespace ClinicManagement.Data.Context
                 );
             });
 
-            // --- Keep your existing mappings for other entities (Appointments, MedicalRecord, Patient, Service, StaffDetail) ---
+            // --- Update Appointment entity configuration for nullable PatientId ---
             modelBuilder.Entity<Appointment>(entity =>
             {
                 entity.HasKey(e => e.AppointmentId).HasName("PK__Appointm__8ECDFCCC56AF500B");
@@ -86,7 +88,7 @@ namespace ClinicManagement.Data.Context
                     .HasColumnType("datetime");
                 entity.Property(e => e.DoctorId).HasColumnName("DoctorID");
                 entity.Property(e => e.Notes).HasMaxLength(500);
-                entity.Property(e => e.PatientId).HasColumnName("PatientID");
+                entity.Property(e => e.PatientId).HasColumnName("PatientID"); // Still maps to the same column
                 entity.Property(e => e.ServiceId).HasColumnName("ServiceID");
                 entity.Property(e => e.Status)
                     .HasMaxLength(50)
@@ -103,9 +105,11 @@ namespace ClinicManagement.Data.Context
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Appointme__Docto__5CD626F7");
 
+                // Update this foreign key relationship to be optional
                 entity.HasOne(d => d.Patient).WithMany(p => p.Appointments)
                     .HasForeignKey(d => d.PatientId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .IsRequired(false) // Make this relationship optional
+                    .OnDelete(DeleteBehavior.SetNull) // Set FK to NULL if Patient is deleted
                     .HasConstraintName("FK__Appointme__Patie__5BE2A6F2");
             });
 
@@ -124,13 +128,12 @@ namespace ClinicManagement.Data.Context
                 entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
                 entity.Property(e => e.ServiceId).HasColumnName("ServiceID");
                 entity.Property(e => e.StaffId).HasColumnName("StaffID");
-                // Configure the new IsDeleted property (no specific mapping needed if it's a simple bool)
                 entity.Property(e => e.IsDeleted).HasDefaultValue(false);
 
 
                 entity.HasOne(d => d.Appointment).WithMany(p => p.MedicalRecords)
                     .HasForeignKey(d => d.AppointmentId)
-                    .OnDelete(DeleteBehavior.ClientSetNull) // Adjust if AppointmentId is truly nullable
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__MedicalRe__Appoi__60A75C0F");
 
                 entity.HasOne(d => d.Patient).WithMany(p => p.MedicalRecords)
@@ -145,8 +148,8 @@ namespace ClinicManagement.Data.Context
 
                 entity.HasOne(d => d.Service).WithMany(p => p.MedicalRecords)
                     .HasForeignKey(d => d.ServiceId)
-                    .OnDelete(DeleteBehavior.SetNull) // SetNull if ServiceId is nullable
-                    .HasConstraintName("FK__MedicalRe__Servi__XXXXXX"); // Placeholder if it was auto-generated, verify actual name
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("FK__MedicalRe__Servi__XXXXXX");
 
             });
 
@@ -173,8 +176,9 @@ namespace ClinicManagement.Data.Context
                 entity.Property(e => e.MiddleName).HasMaxLength(50);
                 entity.Property(e => e.PhotoUrl).HasMaxLength(255);
                 entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
-
                 entity.Property(e => e.UserId).HasColumnName("UserId");
+                entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+
 
                 entity.HasOne(d => d.User)
                     .WithOne(p => p.Patient!)
