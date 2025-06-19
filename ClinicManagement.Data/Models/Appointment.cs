@@ -18,10 +18,10 @@ namespace ClinicManagement.Data.Models
         [Key]
         public int AppointmentId { get; set; }
 
-        // --- IMPORTANT CHANGE: Make PatientId nullable ---
-        public int? PatientId { get; set; }
+        public int? PatientId { get; set; } // Already made nullable for Patient soft delete
 
-        public int DoctorId { get; set; }
+        // --- IMPORTANT CHANGE: Make DoctorId nullable ---
+        public int? DoctorId { get; set; }
 
         public int ServiceId { get; set; }
 
@@ -41,12 +41,12 @@ namespace ClinicManagement.Data.Models
         [Column(TypeName = "datetime")]
         public DateTime? UpdatedAt { get; set; }
 
-        // --- IMPORTANT CHANGE: Make Patient navigation property nullable ---
         [ForeignKey("PatientId")]
-        public virtual Patient? Patient { get; set; } // Now nullable
+        public virtual Patient? Patient { get; set; }
 
+        // --- IMPORTANT CHANGE: Make Doctor navigation property nullable ---
         [ForeignKey("DoctorId")]
-        public virtual StaffDetail? Doctor { get; set; }
+        public virtual StaffDetail? Doctor { get; set; } // Now nullable
 
         [ForeignKey("ServiceId")]
         public virtual Service? Service { get; set; }

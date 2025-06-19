@@ -29,8 +29,11 @@ namespace ClinicManagement.ApiNew.Controllers
         }
 
         // Helper method to map Patient model to PatientDetailsDto
-        private PatientDetailsDto MapToPatientDetailsDto(Patient patient)
+        // CA1822: Mark method as static as it does not access instance data
+        private static PatientDetailsDto MapToPatientDetailsDto(Patient patient)
         {
+            if (patient == null) return null; // CS8603: Possible null reference return. (Expected)
+
             return new PatientDetailsDto
             {
                 PatientId = patient.PatientId,
@@ -38,7 +41,8 @@ namespace ClinicManagement.ApiNew.Controllers
                 MiddleName = patient.MiddleName,
                 LastName = patient.LastName,
                 Gender = patient.Gender,
-                DateOfBirth = patient.DateOfBirth != null ? DateOnly.FromDateTime(patient.DateOfBirth.Value) : (DateOnly?)null, // Map DateTime? to DateOnly?
+                // Map DateTime? to DateOnly?
+                DateOfBirth = patient.DateOfBirth.HasValue ? DateOnly.FromDateTime(patient.DateOfBirth.Value) : (DateOnly?)null,
                 Address = patient.Address,
                 ContactNumber = patient.ContactNumber,
                 Email = patient.Email,
@@ -121,7 +125,8 @@ namespace ClinicManagement.ApiNew.Controllers
                     return Unauthorized("Could not identify current user.");
                 }
 
-                if (patient.UserId != currentUserId)
+                // If Patient.UserId is nullable, ensure it's not null before comparing
+                if (!patient.UserId.HasValue || patient.UserId.Value != currentUserId)
                 {
                     return Forbid("You do not have access to this patient record.");
                 }
@@ -156,20 +161,20 @@ namespace ClinicManagement.ApiNew.Controllers
             }
 
             // Manually map properties from DTO to the existing EF Core entity
-            // Use null-forgiving operator (!) where you expect non-nullable DTO properties to always be present
-            // or null-coalescing (??) if you need a default for nullable DTO properties going to non-nullable model properties.
-            patient.FirstName = updatePatientDto.FirstName!;
-            patient.MiddleName = updatePatientDto.MiddleName;
-            patient.LastName = updatePatientDto.LastName!;
-            patient.Gender = updatePatientDto.Gender;
-            patient.DateOfBirth = updatePatientDto.DateOfBirth?.ToDateTime(TimeOnly.MinValue); // Convert DateOnly? to DateTime?
-            patient.Address = updatePatientDto.Address;
-            patient.ContactNumber = updatePatientDto.ContactNumber!;
-            patient.Email = updatePatientDto.Email!;
-            patient.BloodType = updatePatientDto.BloodType;
-            patient.EmergencyContactName = updatePatientDto.EmergencyContactName;
-            patient.EmergencyContactNumber = updatePatientDto.EmergencyContactNumber;
-            patient.PhotoUrl = updatePatientDto.PhotoUrl;
+            // Use null-forgiving operator (!) for non-nullable properties that are required in DTOs
+            // Use null-coalescing (??) for nullable properties, allowing them to remain unchanged if null in DTO
+            patient.FirstName = updatePatientDto.FirstName ?? patient.FirstName;
+            patient.MiddleName = updatePatientDto.MiddleName ?? patient.MiddleName;
+            patient.LastName = updatePatientDto.LastName ?? patient.LastName;
+            patient.Gender = updatePatientDto.Gender ?? patient.Gender;
+            patient.DateOfBirth = updatePatientDto.DateOfBirth?.ToDateTime(TimeOnly.MinValue) ?? patient.DateOfBirth; // Convert DateOnly? to DateTime?
+            patient.Address = updatePatientDto.Address ?? patient.Address;
+            patient.ContactNumber = updatePatientDto.ContactNumber ?? patient.ContactNumber;
+            patient.Email = updatePatientDto.Email ?? patient.Email;
+            patient.BloodType = updatePatientDto.BloodType ?? patient.BloodType;
+            patient.EmergencyContactName = updatePatientDto.EmergencyContactName ?? patient.EmergencyContactName;
+            patient.EmergencyContactNumber = updatePatientDto.EmergencyContactNumber ?? patient.EmergencyContactNumber;
+            patient.PhotoUrl = updatePatientDto.PhotoUrl ?? patient.PhotoUrl;
             patient.UpdatedAt = DateTime.UtcNow; // Set update timestamp
 
             _context.Entry(patient).State = EntityState.Modified;
@@ -236,6 +241,9 @@ namespace ClinicManagement.ApiNew.Controllers
             // This is needed for the MapToPatientDetailsDto helper if it tries to access patient.User properties.
             if (patient.UserId.HasValue)
             {
+                // Ensure Patient.User is loaded to avoid null reference if it's accessed in MapToPatientDetailsDto
+                // However, PatientDetailsDto does not expose User details directly (only UserId),
+                // so this explicit load might not be strictly necessary if User is not used for mapping.
                 await _context.Entry(patient).Reference(p => p.User).LoadAsync();
             }
 
@@ -317,8 +325,9 @@ namespace ClinicManagement.ApiNew.Controllers
 
         private bool PatientExists(int id)
         {
-            // This helper checks for *active* patients due to the global query filter.
-            // If you need to check for existence including soft-deleted, use .IgnoreQueryFilters() here.
+            // CA1860: Prefer Count/Length over Any() for collections that are already materialized.
+            // For IQueryable, Any() is often more efficient as it can translate to EXISTS SQL.
+            // The existing usage is generally fine for performance in EF Core.
             return (_context.Patients?.Any(e => e.PatientId == id)).GetValueOrDefault();
         }
     }

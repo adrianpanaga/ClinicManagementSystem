@@ -1,27 +1,59 @@
-﻿using System;
+﻿// Location: C:\Users\AdrianPanaga\NewClinicApi\ClinicManagement.Data\Models\ItemBatch.cs
+
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations; // Keep this for other attributes
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ClinicManagement.Data.Models;
-
-public partial class ItemBatch
+namespace ClinicManagement.Data.Models
 {
-    public int BatchId { get; set; }
+    public partial class ItemBatch
+    {
+        public ItemBatch()
+        {
+            StockTransactions = new HashSet<StockTransaction>();
+        }
 
-    public int ItemId { get; set; }
+        [Key]
+        public int BatchId { get; set; }
 
-    public string BatchNumber { get; set; } = null!;
+        // --- IMPORTANT CHANGE: [Required] attribute removed from ItemId ---
+        public int? ItemId { get; set; } // Foreign Key to InventoryItem - MUST BE NULLABLE
 
-    public DateOnly ExpiryDate { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string BatchNumber { get; set; } = null!;
 
-    public int Quantity { get; set; }
+        [Required]
+        public int Quantity { get; set; }
 
-    public DateTime? ReceivedDate { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime? ExpirationDate { get; set; }
 
-    public string? Notes { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime ReceivedDate { get; set; } = DateTime.UtcNow.Date;
 
-    public DateTime? CreatedAt { get; set; }
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal? CostPerUnit { get; set; }
 
-    public DateTime? UpdatedAt { get; set; }
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal SalePrice { get; set; }
 
-    public virtual InventoryItem Item { get; set; } = null!;
+        public int? VendorId { get; set; }
+
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Column(TypeName = "datetime")]
+        public DateTime? UpdatedAt { get; set; }
+
+        // Navigation properties
+        [ForeignKey("ItemId")]
+        public virtual InventoryItem? Item { get; set; } // MUST BE NULLABLE
+
+        [ForeignKey("VendorId")]
+        public virtual Vendor? Vendor { get; set; }
+
+        public virtual ICollection<StockTransaction> StockTransactions { get; set; }
+    }
 }

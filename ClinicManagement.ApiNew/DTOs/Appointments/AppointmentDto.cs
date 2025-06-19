@@ -1,33 +1,28 @@
-﻿namespace ClinicManagement.ApiNew.DTOs.Appointments
+﻿// Location: C:\Users\AdrianPanaga\NewClinicApi\ClinicManagement.ApiNew\DTOs\Appointments\AppointmentDto.cs
+
+using System;
+using ClinicManagement.ApiNew.DTOs.Patients;     // For PatientDetailsDto
+using ClinicManagement.ApiNew.DTOs.StaffDetails; // For StaffDetailDto (Doctor)
+using ClinicManagement.ApiNew.DTOs.Services;    // For ServiceDto
+
+namespace ClinicManagement.ApiNew.DTOs.Appointments
 {
-    /// <summary>
-    /// DTO for returning appointment details in API responses.
-    /// Includes related patient, doctor, and service info for convenience.
-    /// EndDateTime is calculated.
-    /// </summary>
+    // DTO for retrieving Appointment data (Read operations)
     public class AppointmentDto
     {
         public int AppointmentId { get; set; }
-        public DateTime AppointmentDateTime { get; set; } // The start date and time
-        public int DurationMinutes { get; set; }          // Duration of the appointment
-        public DateTime EndDateTime { get; set; }         // Calculated End Time for convenience
-        public string Status { get; set; } = string.Empty;
+        public int? PatientId { get; set; } // Nullable as per model
+        public int DoctorId { get; set; }
+        public int ServiceId { get; set; }
+        public DateTime AppointmentDateTime { get; set; }
+        public string? Status { get; set; }
         public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
-        // Patient details
-        public int PatientId { get; set; }
-        public string PatientFullName { get; set; } = string.Empty;
-        public string PatientContactNumber { get; set; } = string.Empty;
-
-        // Doctor details
-        public int DoctorId { get; set; }
-        public string DoctorFullName { get; set; } = string.Empty;
-        public string DoctorSpecialization { get; set; } = string.Empty;
-
-        // Service details
-        public int ServiceId { get; set; }
-        public string ServiceName { get; set; } = string.Empty;
-        public decimal ServicePrice { get; set; }
+        // --- ADDED NAVIGATION PROPERTIES TO DTO ---
+        public PatientDetailsDto? Patient { get; set; } // Matches PatientDetailsDto
+        public StaffDetailDto? Doctor { get; set; }     // For the associated Doctor (StaffDetail)
+        public ServiceDto? Service { get; set; }        // For the associated Service
     }
 }

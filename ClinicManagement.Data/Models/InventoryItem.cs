@@ -1,43 +1,63 @@
-﻿using System;
+﻿// Location: C:\Users\AdrianPanaga\NewClinicApi\ClinicManagement.Data\Models\InventoryItem.cs
+
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ClinicManagement.Data.Models;
-
-public partial class InventoryItem
+namespace ClinicManagement.Data.Models
 {
-    public int ItemId { get; set; }
+    public partial class InventoryItem
+    {
+        public InventoryItem()
+        {
+            ItemBatches = new HashSet<ItemBatch>();
+            // If you decide to link MedicalRecords directly to InventoryItems (e.g., for dispensed items)
+            // MedicalRecords = new HashSet<MedicalRecord>();
+        }
 
-    public string ItemName { get; set; } = null!;
+        [Key]
+        public int ItemId { get; set; }
 
-    public string? Description { get; set; }
+        [Required]
+        [StringLength(255)]
+        public string ItemName { get; set; } = null!; // Name of the inventory item (e.g., "Paracetamol 500mg")
 
-    public string? Sku { get; set; }
+        [StringLength(100)]
+        public string? Category { get; set; } // e.g., "Medication", "Surgical Supply", "Vaccine"
 
-    public string UnitOfMeasure { get; set; } = null!;
+        [StringLength(50)]
+        public string? UnitOfMeasure { get; set; } // e.g., "Tablet", "Bottle", "Box", "mL"
 
-    public string? Category { get; set; }
+        [Column(TypeName = "decimal(18, 2)")] // Example: Cost per unit
+        public decimal? PurchasePrice { get; set; }
 
-    public int CurrentStock { get; set; }
+        [Column(TypeName = "decimal(18, 2)")] // Example: Selling price per unit
+        public decimal? SellingPrice { get; set; }
 
-    public int ReorderPoint { get; set; }
+        public int VendorId { get; set; } // Assuming VendorId is an integer foreign key
 
-    public int? SupplierId { get; set; }
+        public Vendor Vendor { get; set; } // Assuming Vendor is a navigation property to a Vendor class
 
-    public decimal? PurchasePrice { get; set; }
 
-    public decimal? SellingPrice { get; set; }
+        public int? ReorderLevel { get; set; } // Minimum stock level before reordering
 
-    public bool? ExpiryDateTracking { get; set; }
+        public int? LeadTimeDays { get; set; } // Days it takes to receive a new order
 
-    public bool? IsActive { get; set; }
+        [StringLength(500)]
+        public string? Description { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public DateTime? UpdatedAt { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? UpdatedAt { get; set; }
 
-    public virtual ICollection<ItemBatch> ItemBatches { get; set; } = new List<ItemBatch>();
+        // --- Soft Delete Property ---
+        public bool IsDeleted { get; set; } = false; // Default to false (not deleted)
 
-    public virtual ICollection<StockTransaction> StockTransactions { get; set; } = new List<StockTransaction>();
-
-    public virtual Vendor? Supplier { get; set; }
+        // Navigation properties
+        public virtual ICollection<ItemBatch> ItemBatches { get; set; }
+        // public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } // Uncomment if linking MedicalRecords
+    }
 }

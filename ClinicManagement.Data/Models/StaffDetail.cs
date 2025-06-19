@@ -1,4 +1,5 @@
-﻿// Location: ClinicManagement.Data/Models/StaffDetail.cs
+﻿// Location: C:\Users\AdrianPanaga\NewClinicApi\ClinicManagement.Data\Models\StaffDetail.cs
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,41 +12,32 @@ namespace ClinicManagement.Data.Models
         public StaffDetail()
         {
             Appointments = new HashSet<Appointment>();
+            MedicalRecords = new HashSet<MedicalRecord>();
         }
 
         [Key]
-        [Column("StaffID")]
         public int StaffId { get; set; }
 
-        [Column("UserID")]
-        public int UserId { get; set; } // Foreign key to User
-
-        [Required]
         [StringLength(50)]
-        public string FirstName { get; set; } = null!;
-
-        [Required]
-        [StringLength(50)]
-        public string LastName { get; set; } = null!;
+        public string? FirstName { get; set; }
 
         [StringLength(50)]
         public string? MiddleName { get; set; }
 
-        [Required]
         [StringLength(50)]
-        public string JobTitle { get; set; } = null!;
+        public string? LastName { get; set; }
+
+        [StringLength(50)]
+        public string? JobTitle { get; set; }
 
         [StringLength(100)]
         public string? Specialization { get; set; }
 
-        [Required] // Added [Required] for Email
-        [StringLength(100)] // Added StringLength for Email
-        [EmailAddress] // Added EmailAddress validation
-        public string Email { get; set; } = null!; // Added Email property
+        [StringLength(20)]
+        public string? ContactNumber { get; set; }
 
-        [Required] // Added [Required] for ContactNumber
-        [StringLength(20)] // Added StringLength for ContactNumber
-        public string ContactNumber { get; set; } = null!; // Added ContactNumber property
+        [StringLength(100)]
+        public string? Email { get; set; }
 
         [Column(TypeName = "datetime")]
         public DateTime CreatedAt { get; set; }
@@ -53,13 +45,17 @@ namespace ClinicManagement.Data.Models
         [Column(TypeName = "datetime")]
         public DateTime? UpdatedAt { get; set; }
 
+        public int? UserId { get; set; } // Foreign Key to User (IdentityUser)
+
+        // --- NEW PROPERTY FOR SOFT DELETE ---
+        public bool IsDeleted { get; set; } = false; // Default to false (not deleted)
+
+        // Navigation Properties
         [ForeignKey("UserId")]
-        [InverseProperty("StaffDetails")]
-        public virtual User User { get; set; } = null!;
+        public virtual User? User { get; set; } // Mark as nullable
 
         [InverseProperty("Doctor")]
         public virtual ICollection<Appointment> Appointments { get; set; }
-
-        public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
+        public virtual ICollection<MedicalRecord> MedicalRecords { get; set; }
     }
 }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManagement.Data.Migrations
 {
     [DbContext(typeof(ClinicManagementDbContext))]
-    [Migration("20250616084416_ReAddPatientAndStaffUserForeignKeys")]
-    partial class ReAddPatientAndStaffUserForeignKeys
+    [Migration("20250619025833_AddNewInventoryItemFields")]
+    partial class AddNewInventoryItemFields
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,18 +42,15 @@ namespace ClinicManagement.Data.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.Property<int>("DoctorId")
+                    b.Property<int?>("DoctorId")
                         .HasColumnType("int")
                         .HasColumnName("DoctorID");
-
-                    b.Property<int>("DurationMinutes")
-                        .HasColumnType("int");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int>("PatientId")
+                    b.Property<int?>("PatientId")
                         .HasColumnType("int")
                         .HasColumnName("PatientID");
 
@@ -62,12 +59,14 @@ namespace ClinicManagement.Data.Migrations
                         .HasColumnName("ServiceID");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)")
                         .HasDefaultValueSql("('Scheduled')");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
 
                     b.HasKey("AppointmentId")
                         .HasName("PK__Appointm__8ECDFCCC56AF500B");
@@ -81,6 +80,124 @@ namespace ClinicManagement.Data.Migrations
                     b.ToTable("Appointments");
                 });
 
+            modelBuilder.Entity("ClinicManagement.Data.Models.InventoryItem", b =>
+                {
+                    b.Property<int>("ItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("ItemID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ItemId"));
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("LeadTimeDays")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PurchasePrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int?>("ReorderLevel")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("SellingPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("UnitOfMeasure")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("VendorId")
+                        .HasColumnType("int")
+                        .HasColumnName("VendorID");
+
+                    b.HasKey("ItemId")
+                        .HasName("PK__Inventory__7BF7D5B66736C561");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("InventoryItems");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.ItemBatch", b =>
+                {
+                    b.Property<int>("BatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("BatchID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BatchId"));
+
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal?>("CostPerUnit")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<DateTime?>("ExpirationDate")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("ItemId")
+                        .HasColumnType("int")
+                        .HasColumnName("ItemID");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReceivedDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("SalePrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int?>("VendorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BatchId")
+                        .HasName("PK__ItemBatc__B28D3F372095039A");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("ItemBatches");
+                });
+
             modelBuilder.Entity("ClinicManagement.Data.Models.MedicalRecord", b =>
                 {
                     b.Property<int>("RecordId")
@@ -90,7 +207,7 @@ namespace ClinicManagement.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RecordId"));
 
-                    b.Property<int>("AppointmentId")
+                    b.Property<int?>("AppointmentId")
                         .HasColumnType("int")
                         .HasColumnName("AppointmentID");
 
@@ -102,6 +219,14 @@ namespace ClinicManagement.Data.Migrations
                     b.Property<string>("Diagnosis")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<int?>("MedicalRecordRecordId")
+                        .HasColumnType("int");
 
                     b.Property<int>("PatientId")
                         .HasColumnType("int")
@@ -131,6 +256,8 @@ namespace ClinicManagement.Data.Migrations
 
                     b.HasIndex("AppointmentId");
 
+                    b.HasIndex("MedicalRecordRecordId");
+
                     b.HasIndex("PatientId");
 
                     b.HasIndex("ServiceId");
@@ -158,7 +285,6 @@ namespace ClinicManagement.Data.Migrations
                         .HasColumnType("nvarchar(5)");
 
                     b.Property<string>("ContactNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
@@ -167,11 +293,10 @@ namespace ClinicManagement.Data.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.Property<DateOnly>("DateOfBirth")
+                    b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("date");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -184,17 +309,19 @@ namespace ClinicManagement.Data.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -217,10 +344,12 @@ namespace ClinicManagement.Data.Migrations
                         .HasName("PK__Patients__970EC346E8240D4B");
 
                     b.HasIndex("ContactNumber")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[ContactNumber] IS NOT NULL");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
 
                     b.HasIndex("UserId")
                         .IsUnique()
@@ -370,7 +499,6 @@ namespace ClinicManagement.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StaffId"));
 
                     b.Property<string>("ContactNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
@@ -380,22 +508,23 @@ namespace ClinicManagement.Data.Migrations
                         .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("JobTitle")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -410,7 +539,7 @@ namespace ClinicManagement.Data.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int")
                         .HasColumnName("UserID");
 
@@ -420,6 +549,60 @@ namespace ClinicManagement.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("StaffDetails");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.StockTransaction", b =>
+                {
+                    b.Property<int>("TransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("TransactionID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
+
+                    b.Property<int>("BatchId")
+                        .HasColumnType("int")
+                        .HasColumnName("BatchID");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("StaffId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("TransactionId")
+                        .HasName("PK__StockTra__55433B6A7F2D065C");
+
+                    b.HasIndex("BatchId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("StockTransactions");
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.User", b =>
@@ -505,6 +688,59 @@ namespace ClinicManagement.Data.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.Vendor", b =>
+                {
+                    b.Property<int>("VendorId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("VendorID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VendorId"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ContactNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ContactPerson")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("VendorName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("VendorId")
+                        .HasName("PK__Vendors__FC8653AD1D3DE96A");
+
+                    b.ToTable("Vendors");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -615,13 +851,13 @@ namespace ClinicManagement.Data.Migrations
                     b.HasOne("ClinicManagement.Data.Models.StaffDetail", "Doctor")
                         .WithMany("Appointments")
                         .HasForeignKey("DoctorId")
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("FK__Appointme__Docto__5CD626F7");
 
                     b.HasOne("ClinicManagement.Data.Models.Patient", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("FK__Appointme__Patie__5BE2A6F2");
 
                     b.HasOne("ClinicManagement.Data.Models.Service", "Service")
@@ -637,13 +873,44 @@ namespace ClinicManagement.Data.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("ClinicManagement.Data.Models.InventoryItem", b =>
+                {
+                    b.HasOne("ClinicManagement.Data.Models.Vendor", "Vendor")
+                        .WithMany("InventoryItems")
+                        .HasForeignKey("VendorId")
+                        .IsRequired()
+                        .HasConstraintName("FK__Inventory__Vendo__6EF57B66");
+
+                    b.Navigation("Vendor");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.ItemBatch", b =>
+                {
+                    b.HasOne("ClinicManagement.Data.Models.InventoryItem", "Item")
+                        .WithMany("ItemBatches")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK__ItemBatch__ItemI__72C60C4A");
+
+                    b.HasOne("ClinicManagement.Data.Models.Vendor", "Vendor")
+                        .WithMany()
+                        .HasForeignKey("VendorId");
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Vendor");
+                });
+
             modelBuilder.Entity("ClinicManagement.Data.Models.MedicalRecord", b =>
                 {
                     b.HasOne("ClinicManagement.Data.Models.Appointment", "Appointment")
                         .WithMany("MedicalRecords")
                         .HasForeignKey("AppointmentId")
-                        .IsRequired()
                         .HasConstraintName("FK__MedicalRe__Appoi__60A75C0F");
+
+                    b.HasOne("ClinicManagement.Data.Models.MedicalRecord", null)
+                        .WithMany("MedicalRecords")
+                        .HasForeignKey("MedicalRecordRecordId");
 
                     b.HasOne("ClinicManagement.Data.Models.Patient", "Patient")
                         .WithMany("MedicalRecords")
@@ -688,10 +955,32 @@ namespace ClinicManagement.Data.Migrations
                     b.HasOne("ClinicManagement.Data.Models.User", "User")
                         .WithMany("StaffDetails")
                         .HasForeignKey("UserId")
-                        .IsRequired()
                         .HasConstraintName("FK_StaffDetails_Users_UserId_New");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.StockTransaction", b =>
+                {
+                    b.HasOne("ClinicManagement.Data.Models.ItemBatch", "Batch")
+                        .WithMany("StockTransactions")
+                        .HasForeignKey("BatchId")
+                        .IsRequired()
+                        .HasConstraintName("FK__StockTran__Batch__75A278FBC");
+
+                    b.HasOne("ClinicManagement.Data.Models.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId");
+
+                    b.HasOne("ClinicManagement.Data.Models.StaffDetail", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId");
+
+                    b.Navigation("Batch");
+
+                    b.Navigation("Patient");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.User", b =>
@@ -761,6 +1050,21 @@ namespace ClinicManagement.Data.Migrations
                     b.Navigation("MedicalRecords");
                 });
 
+            modelBuilder.Entity("ClinicManagement.Data.Models.InventoryItem", b =>
+                {
+                    b.Navigation("ItemBatches");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.ItemBatch", b =>
+                {
+                    b.Navigation("StockTransactions");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.MedicalRecord", b =>
+                {
+                    b.Navigation("MedicalRecords");
+                });
+
             modelBuilder.Entity("ClinicManagement.Data.Models.Patient", b =>
                 {
                     b.Navigation("Appointments");
@@ -792,6 +1096,11 @@ namespace ClinicManagement.Data.Migrations
                     b.Navigation("Patient");
 
                     b.Navigation("StaffDetails");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.Vendor", b =>
+                {
+                    b.Navigation("InventoryItems");
                 });
 #pragma warning restore 612, 618
         }

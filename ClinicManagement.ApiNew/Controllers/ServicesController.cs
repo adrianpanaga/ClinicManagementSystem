@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization; // For authorization attributes
 
 using ClinicManagement.Data.Context; // Your DbContext
 using ClinicManagement.Data.Models;   // Your EF Core models
-using ClinicManagement.ApiNew.DTOs.Services; // Your Service DTOs
+using ClinicManagement.ApiNew.DTOs.Services;    // Your Service DTOs
 
 namespace ClinicManagement.ApiNew.Controllers
 {
@@ -28,8 +28,10 @@ namespace ClinicManagement.ApiNew.Controllers
         }
 
         // Helper method to map Service model to ServiceDto
-        private ServiceDto MapToServiceDto(Service service)
+        private static ServiceDto MapToServiceDto(Service service)
         {
+            if (service == null) return null; // CS8603: Expected null return.
+
             return new ServiceDto
             {
                 ServiceId = service.ServiceId,
@@ -43,13 +45,12 @@ namespace ClinicManagement.ApiNew.Controllers
 
         // GET: api/Services
         /// <summary>
-        /// Retrieves all services. Accessible by all authenticated users.
+        /// Retrieves all services. Accessible by any authenticated user.
         /// </summary>
         /// <returns>A list of ServiceDto.</returns>
         [HttpGet]
-        [AllowAnonymous] // Services can be viewed by anyone, even unauthenticated users (if public facing)
-                         // Or, if only authenticated users should see them, remove [AllowAnonymous]
-                         // For clinic internal use, [Authorize] on class level is sufficient.
+        [AllowAnonymous] // Services can often be viewed by anyone, even unauthenticated, or by all authenticated roles.
+                         // Keeping it [Authorize] for now, but removed specific roles as it's general info.
         public async Task<ActionResult<IEnumerable<ServiceDto>>> GetServices()
         {
             if (_context.Services == null)
@@ -63,18 +64,19 @@ namespace ClinicManagement.ApiNew.Controllers
 
         // GET: api/Services/5
         /// <summary>
-        /// Retrieves a specific service by its ID. Accessible by all authenticated users.
+        /// Retrieves a specific service by ID. Accessible by any authenticated user.
         /// </summary>
         /// <param name="id">The ID of the service.</param>
         /// <returns>The ServiceDto if found, otherwise NotFound.</returns>
         [HttpGet("{id}")]
-        [AllowAnonymous] // Same logic as GetServices()
+        [AllowAnonymous] // Services can often be viewed by anyone
         public async Task<ActionResult<ServiceDto>> GetService(int id)
         {
             if (_context.Services == null)
             {
                 return NotFound();
             }
+
             var service = await _context.Services.FindAsync(id);
 
             if (service == null)
@@ -87,14 +89,14 @@ namespace ClinicManagement.ApiNew.Controllers
 
         // PUT: api/Services/5
         /// <summary>
-        /// Updates an existing service.
-        /// Requires Admin or Receptionist role.
+        /// Updates an existing service record.
+        /// Requires Admin or HR role.
         /// </summary>
         /// <param name="id">The ID of the service to update.</param>
         /// <param name="updateServiceDto">The DTO object with updated data.</param>
         /// <returns>NoContent if successful, BadRequest if ID mismatch, NotFound if service not found, or throws exception for concurrency.</returns>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Receptionist")] // Only Admin or Receptionist can update services
+        [Authorize(Roles = "Admin,HR")] // Only Admin or HR can update services
         public async Task<IActionResult> PutService(int id, UpdateServiceDto updateServiceDto)
         {
             if (id != updateServiceDto.ServiceId)
@@ -109,9 +111,9 @@ namespace ClinicManagement.ApiNew.Controllers
             }
 
             // Manually map properties from DTO to the existing EF Core entity
-            service.ServiceName = updateServiceDto.ServiceName!; // Added null-forgiving operator
-            service.Description = updateServiceDto.Description!; // Added null-forgiving operator
-            service.Price = updateServiceDto.Price;
+            service.ServiceName = updateServiceDto.ServiceName ?? service.ServiceName;
+            service.Description = updateServiceDto.Description ?? service.Description;
+            service.Price = updateServiceDto.Price; // Null coalescing for nullable decimal?
             service.UpdatedAt = DateTime.UtcNow; // Set update timestamp
 
             _context.Entry(service).State = EntityState.Modified;
@@ -137,13 +139,13 @@ namespace ClinicManagement.ApiNew.Controllers
 
         // POST: api/Services
         /// <summary>
-        /// Creates a new service.
-        /// Requires Admin or Receptionist role.
+        /// Creates a new service record.
+        /// Requires Admin or HR role.
         /// </summary>
         /// <param name="createServiceDto">The DTO object to create.</param>
         /// <returns>The created ServiceDto with its ID, or a problem if the DbSet is null.</returns>
         [HttpPost]
-        [Authorize(Roles = "Admin,Receptionist")] // Only Admin or Receptionist can create services
+        [Authorize(Roles = "Admin,HR")] // Only Admin or HR can create new services
         public async Task<ActionResult<ServiceDto>> PostService(CreateServiceDto createServiceDto)
         {
             if (_context.Services == null)
@@ -154,8 +156,8 @@ namespace ClinicManagement.ApiNew.Controllers
             // Manually map DTO to EF Core model
             var service = new Service
             {
-                ServiceName = createServiceDto.ServiceName!, // Added null-forgiving operator
-                Description = createServiceDto.Description!, // Added null-forgiving operator
+                ServiceName = createServiceDto.ServiceName,
+                Description = createServiceDto.Description,
                 Price = createServiceDto.Price,
                 CreatedAt = DateTime.UtcNow, // Set creation timestamp
                 UpdatedAt = DateTime.UtcNow  // Set initial update timestamp
@@ -167,15 +169,15 @@ namespace ClinicManagement.ApiNew.Controllers
             return CreatedAtAction("GetService", new { id = service.ServiceId }, MapToServiceDto(service));
         }
 
-        // DELETE: api/Services/5
+        // DELETE: api/Services/5 (Hard Delete)
         /// <summary>
-        /// Deletes a service by its ID.
-        /// Requires Admin role.
+        /// Deletes a service by its ID. Note: This is a hard delete.
+        /// Requires Admin or HR role.
         /// </summary>
         /// <param name="id">The ID of the service to delete.</param>
         /// <returns>NoContent if successful, or NotFound if the service does not exist.</returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")] // Only Admin can delete services (consider soft delete if applicable)
+        [Authorize(Roles = "Admin,HR")] // Only Admin or HR can delete services
         public async Task<IActionResult> DeleteService(int id)
         {
             if (_context.Services == null)

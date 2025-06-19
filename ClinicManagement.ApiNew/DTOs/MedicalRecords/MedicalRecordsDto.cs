@@ -4,8 +4,7 @@ using System;
 using ClinicManagement.ApiNew.DTOs.Appointments; // Using existing Appointment DTO
 using ClinicManagement.ApiNew.DTOs.Patients;    // Using existing Patient DTO
 using ClinicManagement.ApiNew.DTOs.StaffDetails; // Using existing StaffDetail DTO
-// Add using for your Services DTO if it exists, e.g.:
-// using ClinicManagement.ApiNew.DTOs.Services; 
+using ClinicManagement.ApiNew.DTOs.Services;    // Using existing Service DTO
 
 namespace ClinicManagement.ApiNew.DTOs.MedicalRecords
 {
@@ -22,12 +21,12 @@ namespace ClinicManagement.ApiNew.DTOs.MedicalRecords
         public string? Prescription { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public bool IsDeleted { get; set; } // Soft delete property for medical records
 
         // Include DTOs for related entities for a complete response
-        // Note: These will map from your existing DTO types
         public PatientDetailsDto? Patient { get; set; } // Assuming your Patient DTO is PatientDetailsDto
         public StaffDetailDto? Staff { get; set; }
         public AppointmentDto? Appointment { get; set; }
-        // public ServiceDto? Service { get; set; } // Uncomment if you have a ServiceDto, otherwise remove
+        public ServiceDto? Service { get; set; }
     }
 }

@@ -1,33 +1,52 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Location: C:\Users\AdrianPanaga\NewClinicApi\ClinicManagement.Data\Models\StockTransaction.cs
 
-namespace ClinicManagement.Data.Models;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-public partial class StockTransaction
+namespace ClinicManagement.Data.Models
 {
-    public int TransactionId { get; set; }
+    public partial class StockTransaction
+    {
+        [Key]
+        public int TransactionId { get; set; }
 
-    public int ItemId { get; set; }
+        [Required]
+        public int BatchId { get; set; } // Foreign Key to ItemBatch
 
-    public string TransactionType { get; set; } = null!;
+        [Required]
+        public int Quantity { get; set; } // Quantity of items transacted (positive for IN, negative for OUT)
 
-    public int Quantity { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string TransactionType { get; set; } = null!; // e.g., "IN", "OUT", "ADJUSTMENT"
 
-    public DateTime TransactionDate { get; set; }
+        [StringLength(500)]
+        public string? Notes { get; set; } // Additional details about the transaction
 
-    public int PerformedByUserId { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
 
-    public string? SourceDestination { get; set; }
+        // Optional: Link to a StaffDetail if a staff member initiated the transaction
+        public int? StaffId { get; set; } // Foreign Key to StaffDetail
 
-    public string? Notes { get; set; }
+        // Optional: Link to a Patient if items are dispensed to a patient (e.g., medication)
+        public int? PatientId { get; set; } // Foreign Key to Patient
 
-    public int? RelatedRecordId { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public DateTime? CreatedAt { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? UpdatedAt { get; set; }
 
-    public DateTime? UpdatedAt { get; set; }
+        // Navigation properties
+        [ForeignKey("BatchId")]
+        public virtual ItemBatch Batch { get; set; } = null!;
 
-    public virtual InventoryItem Item { get; set; } = null!;
+        [ForeignKey("StaffId")]
+        public virtual StaffDetail? Staff { get; set; } // Nullable as not all transactions require a specific staff
 
-    public virtual User PerformedByUser { get; set; } = null!;
+        [ForeignKey("PatientId")]
+        public virtual Patient? Patient { get; set; } // Nullable as not all transactions are patient-related
+    }
 }
