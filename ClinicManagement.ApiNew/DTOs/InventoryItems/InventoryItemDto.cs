@@ -18,5 +18,9 @@ namespace ClinicManagement.ApiNew.DTOs.InventoryItems
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } // Include soft delete status
+        public int VendorId { get; set; }
+
+        // NEW: Property to hold the Vendor's Name for GET responses
+        public string? VendorName { get; set; } // Include vendor name for convenience
     }
 }

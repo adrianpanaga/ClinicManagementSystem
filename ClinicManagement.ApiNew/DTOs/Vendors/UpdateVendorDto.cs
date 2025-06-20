@@ -27,5 +27,9 @@ namespace ClinicManagement.ApiNew.DTOs.Vendors
         [MaxLength(255, ErrorMessage = "Address cannot exceed 255 characters.")]
         public string? Address { get; set; }
         // --- END NEW PROPERTIES ---
+
+        [MaxLength(255, ErrorMessage = "Notes cannot exceed 255 characters.")]
+        public string? Notes { get; set; }
+
     }
 }

@@ -99,6 +99,22 @@ builder.Services.AddAuthorization(options =>
 // 6. Register custom services
 builder.Services.AddScoped<AuthService>(); // Register AuthService for dependency injection
 
+// 7. Add cors policy (if needed)
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        policy =>
+        {
+            // THIS IS CRUCIAL:
+            // Ensure this exactly matches the URL of your Vue.js development server.
+            // It should be 'http://localhost:5173' (or whatever port Vite is running on).
+            // Notice it's HTTP, not HTTPS, for the Vue app's origin.
+            policy.WithOrigins("http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -116,6 +132,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+
+// THIS IS CRUCIAL:
+// It must be placed after UseRouting() (if you have it)
+// and before UseAuthorization() and MapControllers().
+app.UseCors(); // This applies the default policy defined above
 
 // 7. Use Authentication and Authorization middleware
 app.UseAuthentication();

@@ -40,6 +40,7 @@ namespace ClinicManagement.ApiNew.Controllers
                 ContactNumber = vendor.ContactNumber, // Added
                 Email = vendor.Email,                 // Added
                 Address = vendor.Address,             // Added
+                Notes = vendor.Notes,
                 CreatedAt = vendor.CreatedAt,
                 UpdatedAt = vendor.UpdatedAt,
                 IsDeleted = vendor.IsDeleted // Include soft delete status
@@ -132,6 +133,7 @@ namespace ClinicManagement.ApiNew.Controllers
             vendor.ContactNumber = updateVendorDto.ContactNumber ?? vendor.ContactNumber; // Added
             vendor.Email = updateVendorDto.Email ?? vendor.Email;                         // Added
             vendor.Address = updateVendorDto.Address ?? vendor.Address;                   // Added
+            vendor.Notes = updateVendorDto.Notes ?? vendor.Notes;
             vendor.UpdatedAt = DateTime.UtcNow; // Set update timestamp
 
             _context.Entry(vendor).State = EntityState.Modified;
@@ -177,6 +179,7 @@ namespace ClinicManagement.ApiNew.Controllers
                 ContactNumber = createVendorDto.ContactNumber, // Added
                 Email = createVendorDto.Email,                 // Added
                 Address = createVendorDto.Address,             // Added
+                Notes = createVendorDto.Notes,
                 CreatedAt = DateTime.UtcNow, // Set creation timestamp
                 UpdatedAt = DateTime.UtcNow,  // Set initial update timestamp
                 IsDeleted = false // Default to not deleted

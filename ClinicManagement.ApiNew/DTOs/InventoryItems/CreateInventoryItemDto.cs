@@ -29,5 +29,10 @@ namespace ClinicManagement.ApiNew.DTOs.InventoryItems
 
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
         public string? Description { get; set; }
+
+        [Required(ErrorMessage = "Vendor ID is required.")]
+        public int VendorId { get; set; }
+
+        
     }
 }

@@ -45,7 +45,8 @@ namespace ClinicManagement.ApiNew.Controllers
                 Description = item.Description,
                 CreatedAt = item.CreatedAt,
                 UpdatedAt = item.UpdatedAt,
-                IsDeleted = item.IsDeleted
+                IsDeleted = item.IsDeleted,
+                VendorId = item.VendorId // Assuming you want to include VendorId in the DTO
             };
         }
 
@@ -144,6 +145,7 @@ namespace ClinicManagement.ApiNew.Controllers
             item.LeadTimeDays = updateInventoryItemDto.LeadTimeDays ?? item.LeadTimeDays;
             item.Description = updateInventoryItemDto.Description ?? item.Description;
             item.UpdatedAt = DateTime.UtcNow; // Set update timestamp
+            item.VendorId = updateInventoryItemDto.VendorId; // Assuming VendorId is always required
 
             _context.Entry(item).State = EntityState.Modified;
 
@@ -195,7 +197,8 @@ namespace ClinicManagement.ApiNew.Controllers
                 Description = createInventoryItemDto.Description,
                 CreatedAt = DateTime.UtcNow, // Set creation timestamp
                 UpdatedAt = DateTime.UtcNow,  // Set initial update timestamp
-                IsDeleted = false // Default to not deleted
+                IsDeleted = false, // Default to not deleted
+                VendorId = createInventoryItemDto.VendorId // Assuming VendorId is always required
             };
 
             _context.InventoryItems.Add(item);

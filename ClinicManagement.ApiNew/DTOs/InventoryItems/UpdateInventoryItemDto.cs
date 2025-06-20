@@ -11,7 +11,7 @@ namespace ClinicManagement.ApiNew.DTOs.InventoryItems
         public int ItemId { get; set; }
 
         [StringLength(255, ErrorMessage = "Item name cannot exceed 255 characters.")]
-        public string? ItemName { get; set; } // Nullable as it might not always be updated
+        public string? ItemName { get; set; } = null!; // Nullable as it might not always be updated
 
         [StringLength(100, ErrorMessage = "Category cannot exceed 100 characters.")]
         public string? Category { get; set; }
@@ -31,5 +31,8 @@ namespace ClinicManagement.ApiNew.DTOs.InventoryItems
 
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
         public string? Description { get; set; }
+
+        [Required(ErrorMessage = "Vendor ID is required for update.")]
+        public int VendorId { get; set; }
     }
 }
