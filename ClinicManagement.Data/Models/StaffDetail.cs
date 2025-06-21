@@ -14,33 +14,39 @@ namespace ClinicManagement.Data.Models
             Appointments = new HashSet<Appointment>();
             MedicalRecords = new HashSet<MedicalRecord>();
         }
-
+         
         [Key]
         public int StaffId { get; set; }
 
-        [StringLength(50)]
+        [Required(ErrorMessage = "First Name is required.")]
+        [MaxLength(50)]
         public string? FirstName { get; set; }
 
-        [StringLength(50)]
+        [MaxLength(50)]
         public string? MiddleName { get; set; }
 
-        [StringLength(50)]
+        [Required(ErrorMessage = "Last Name is required.")]
+        [MaxLength(50)]
         public string? LastName { get; set; }
 
-        [StringLength(50)]
+        [Required(ErrorMessage = "Job Title is required.")]
+        [MaxLength(50)]
         public string? JobTitle { get; set; }
 
-        [StringLength(100)]
+        [MaxLength(100)]
         public string? Specialization { get; set; }
 
-        [StringLength(20)]
+        [Required(ErrorMessage = "Contact Number is required.")]
+        [MaxLength(20)]
         public string? ContactNumber { get; set; }
 
-        [StringLength(100)]
+        [Required(ErrorMessage = "Email Address is required.")]
+        [EmailAddress(ErrorMessage = "Invalid Email Address.")]
+        [MaxLength(100)]
         public string? Email { get; set; }
 
         [Column(TypeName = "datetime")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Default to current UTC time
 
         [Column(TypeName = "datetime")]
         public DateTime? UpdatedAt { get; set; }
