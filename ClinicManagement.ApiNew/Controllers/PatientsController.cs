@@ -148,6 +148,8 @@ namespace ClinicManagement.ApiNew.Controllers
         [Authorize(Roles = "Admin,HR,Receptionist")] // Roles allowed to update patients
         public async Task<IActionResult> PutPatient(int id, UpdatePatientDto updatePatientDto)
         {
+            updatePatientDto.PatientId = id;
+
             if (id != updatePatientDto.PatientId)
             {
                 return BadRequest("Mismatched Patient ID in route and body.");
@@ -206,8 +208,9 @@ namespace ClinicManagement.ApiNew.Controllers
         /// <param name="createPatientDto">The DTO object to create.</param>
         /// <returns>The created PatientDetailsDto with its ID, or a problem if the DbSet is null.</returns>
         [HttpPost]
-        [Authorize(Roles = "Admin,Receptionist")] // Roles allowed to create patients
-        public async Task<ActionResult<PatientDetailsDto>> PostPatient(CreatePatientDto createPatientDto)
+        [Authorize]
+        //[Authorize(Roles = "Admin,Receptionist")] // Roles allowed to create patients
+        public async Task<ActionResult<PatientDetailsDto>> PostPatient([FromBody] CreatePatientDto createPatientDto)
         {
             if (_context.Patients == null)
             {
@@ -237,19 +240,15 @@ namespace ClinicManagement.ApiNew.Controllers
             _context.Patients.Add(patient);
             await _context.SaveChangesAsync();
 
-            // Load the associated User if UserId is set for the Patient.
-            // This is needed for the MapToPatientDetailsDto helper if it tries to access patient.User properties.
-            if (patient.UserId.HasValue)
-            {
-                // Ensure Patient.User is loaded to avoid null reference if it's accessed in MapToPatientDetailsDto
-                // However, PatientDetailsDto does not expose User details directly (only UserId),
-                // so this explicit load might not be strictly necessary if User is not used for mapping.
-                await _context.Entry(patient).Reference(p => p.User).LoadAsync();
-            }
-
             return CreatedAtAction("GetPatient", new { id = patient.PatientId }, MapToPatientDetailsDto(patient));
         }
 
+        //[HttpPost("test-route")] // This will create the route: /api/Patients/test-route
+        //[AllowAnonymous] // Allows access without any token
+        //public IActionResult TestRoute()
+        //{
+        //    return Ok("Test route reached successfully!");
+        //}
 
         // DELETE: api/Patients/5 (Soft Delete)
         /// <summary>

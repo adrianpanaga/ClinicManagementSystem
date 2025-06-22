@@ -8,7 +8,7 @@ namespace ClinicManagement.ApiNew.DTOs.Patients
 {
     public class UpdatePatientDto
     {
-        [Required(ErrorMessage = "Patient ID is required for update.")]
+        [JsonIgnore]
         public int PatientId { get; set; }
 
         [MaxLength(50)]

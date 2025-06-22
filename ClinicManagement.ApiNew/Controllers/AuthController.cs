@@ -29,45 +29,33 @@ namespace ClinicManagement.ApiNew.Controllers
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        // In AuthController.cs, in your Register method
         public async Task<IActionResult> Register([FromBody] RegisterUserDto registerDto)
         {
-            // Basic validation
-            if (string.IsNullOrWhiteSpace(registerDto.Username) ||
-                string.IsNullOrWhiteSpace(registerDto.Password) ||
-                string.IsNullOrWhiteSpace(registerDto.Email))
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Username, Password, and Email are required.");
+                return BadRequest(ModelState);
             }
 
-            try
+            var result = await _authService.Register(registerDto); // This returns IdentityResult
+
+            if (!result.Succeeded)
             {
-                var newUser = await _authService.Register(registerDto);
-                if (newUser == null)
-                {
-                    return BadRequest("Username or Email already exists, or specified role is invalid.");
-                }
-
-                // Log the registration for auditing
-                _logger.LogInformation("User registered: {Username} (ID: {UserId})", newUser.UserName, newUser.Id);
-
-                // Optionally, log in the user immediately after registration and return a token
-                var loginDto = new LoginDto { Username = registerDto.Username, Password = registerDto.Password };
-                var token = await _authService.Login(loginDto);
-
-                if (token == null)
-                {
-                    // This should ideally not happen if registration was successful
-                    _logger.LogError("Failed to generate token for newly registered user: {Username}", registerDto.Username);
-                    return StatusCode(StatusCodes.Status500InternalServerError, "User registered but failed to generate authentication token.");
-                }
-
-                return Ok(new { Token = token });
+                // Return errors from IdentityResult
+                return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during user registration for {Username}", registerDto.Username);
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred during registration.");
-            }
+
+            // Successfully registered. You don't get the User object back directly here
+            // from the AuthService's current implementation, but you can say it's successful.
+            return Ok(new { message = "User registered successfully." });
+
+            // If you needed the User ID, you'd have to modify AuthService.Register to return User or UserId
+            // Example if AuthService returns User:
+            /*
+            var newUser = await _authService.Register(registerDto);
+            if (newUser == null) return BadRequest(...); // Handle duplicate username/email
+            return Ok(new { UserId = newUser.Id, Username = newUser.UserName, Email = newUser.Email });
+            */
         }
 
         /// <summary>

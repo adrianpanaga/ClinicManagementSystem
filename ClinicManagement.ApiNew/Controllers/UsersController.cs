@@ -35,13 +35,11 @@ namespace ClinicManagement.ApiNew.Controllers
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
         {
             var users = await _context.Users
-                                    .Include(u => u.Role)
                                     .Select(u => new UserDto
                                     {
                                         UserId = u.Id,
                                         Username = u.UserName ?? string.Empty, // FIX CS8601: Handle potential null UserName
                                         Email = u.Email ?? string.Empty,       // FIX CS8601: Handle potential null Email
-                                        RoleName = u.Role != null ? u.Role.Name : "No Role",
                                         IsActive = u.IsActive, // No cast needed if IsActive is bool, or if bool? and DTO is bool?
                                         CreatedAt = u.CreatedAt // No cast needed if CreatedAt is DateTime, or if DateTime? and DTO is DateTime?
                                     })
@@ -71,7 +69,6 @@ namespace ClinicManagement.ApiNew.Controllers
             }
 
             var user = await _context.Users
-                                    .Include(u => u.Role)
                                     .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
@@ -84,7 +81,6 @@ namespace ClinicManagement.ApiNew.Controllers
                 UserId = user.Id,
                 Username = user.UserName ?? string.Empty, // FIX CS8601: Handle potential null UserName
                 Email = user.Email ?? string.Empty,       // FIX CS8601: Handle potential null Email
-                RoleName = user.Role != null ? user.Role.Name : "No Role",
                 IsActive = user.IsActive, // No cast needed if IsActive is bool, or if bool? and DTO is bool?
                 CreatedAt = user.CreatedAt // No cast needed if CreatedAt is DateTime, or if DateTime? and DTO is DateTime?
             };
@@ -209,8 +205,6 @@ namespace ClinicManagement.ApiNew.Controllers
             {
                 return BadRequest($"Role '{assignRoleDto.RoleName}' not found.");
             }
-
-            userToUpdate.RoleId = role.Id;
 
             try
             {

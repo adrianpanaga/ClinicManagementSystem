@@ -12,8 +12,7 @@ namespace ClinicManagement.Data.Models
         public InventoryItem()
         {
             ItemBatches = new HashSet<ItemBatch>();
-            // If you decide to link MedicalRecords directly to InventoryItems (e.g., for dispensed items)
-            // MedicalRecords = new HashSet<MedicalRecord>();
+            //MedicalRecords = new HashSet<MedicalRecord>();
         }
 
         [Key]
@@ -37,6 +36,7 @@ namespace ClinicManagement.Data.Models
 
         public int VendorId { get; set; } // Assuming VendorId is an integer foreign key
 
+        [Required]
         public Vendor Vendor { get; set; } // Assuming Vendor is a navigation property to a Vendor class
 
 
@@ -57,7 +57,7 @@ namespace ClinicManagement.Data.Models
         public bool IsDeleted { get; set; } = false; // Default to false (not deleted)
 
         // Navigation properties
-        public virtual ICollection<ItemBatch> ItemBatches { get; set; }
+        public virtual ICollection<ItemBatch> ItemBatches { get; set; } = new List<ItemBatch>();
         // public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } // Uncomment if linking MedicalRecords
     }
 }

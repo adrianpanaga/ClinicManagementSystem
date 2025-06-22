@@ -66,11 +66,7 @@ namespace ClinicManagement.Data.Models
         // --- NEW PROPERTY FOR SOFT DELETE ---
         public bool IsDeleted { get; set; } = false; // Default to false (not deleted)
 
-        // Navigation Properties
-        [ForeignKey("UserId")]
-        public virtual User? User { get; set; }
-
-        public virtual ICollection<Appointment> Appointments { get; set; }
-        public virtual ICollection<MedicalRecord> MedicalRecords { get; set; }
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+        public ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
     }
 }

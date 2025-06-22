@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.OpenApi.Models; // Required for OpenApiSecurityScheme and OpenApiReference
+using Microsoft.OpenApi.Models;
 using ClinicManagement.Data.Context;
-using ClinicManagement.ApiNew.Services; // Ensure this is present if AuthService is in this namespace
-using Microsoft.AspNetCore.Identity; // For IdentityUser, IdentityRole if used
+using ClinicManagement.ApiNew.Services;
+using Microsoft.AspNetCore.Identity; // Make sure this using is present
+using ClinicManagement.Data.Models; // Make sure this using is present for User and Role
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,11 +16,32 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ClinicManagementDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ClinicManagementDbConnection")));
 
+// --- START: ADD MISSING IDENTITY CONFIGURATION ---
+// Configure ASP.NET Core Identity
+// AddIdentity<TUser, TRole> where TUser is your custom User model and TRole is your custom Role model
+builder.Services.AddIdentity<ClinicManagement.Data.Models.User, ClinicManagement.Data.Models.Role>(options =>
+{
+    // Identity options (e.g., password strength, lockout settings)
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+    options.User.RequireUniqueEmail = true;
+    // Lockout settings
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+})
+.AddEntityFrameworkStores<ClinicManagementDbContext>() // Tells Identity to use your DbContext
+.AddDefaultTokenProviders(); // Provides token generators for password resets, email confirmations etc.
+// --- END: ADD MISSING IDENTITY CONFIGURATION ---
+
+
 // 2. Add Controllers and enable JSON options
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Configure JSON serialization for DateOnly
         options.JsonSerializerOptions.Converters.Add(new ClinicManagement.ApiNew.DTOs.Patients.DateOnlyJsonConverter());
     });
 
@@ -35,8 +57,8 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"JWT Authorization header using the Bearer scheme.
-                      Enter 'Bearer' [space] and then your token in the text input below.
-                      Example: 'Bearer 12345abcdef'",
+                    Enter 'Bearer' [space] and then your token in the text input below.
+                    Example: 'Bearer 12345abcdef'",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -61,17 +83,15 @@ builder.Services.AddSwaggerGen(c =>
             new List<string>()
         }
     });
-
-    // Optional: Include XML comments for Swagger UI (for endpoint descriptions and DTOs)
-    // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    // c.IncludeXmlComments(xmlPath);
 });
 // --- END: Swagger/OpenAPI Configuration for JWT Authorization ---
 
 
 // 4. Configure JWT Authentication
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -82,8 +102,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            // Updated JWT Key
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured.")))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured."))),
+            ClockSkew = TimeSpan.Zero // Reduces default 5 min grace period for expired tokens
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context => {
+                Console.WriteLine("Authentication failed: " + context.Exception.Message);
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token validated successfully!");
+                // Optionally log claims to confirm user identity
+                foreach (var claim in context.Principal.Claims)
+                {
+                    Console.WriteLine($"Claim: {claim.Type} = {claim.Value}");
+                }
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                Console.WriteLine("Authentication challenge: " + context.AuthenticateFailure?.Message);
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -93,7 +136,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
     options.AddPolicy("ClinicStaff", policy => policy.RequireRole("Admin", "HR", "Receptionist", "Doctor", "Nurse", "InventoryManager"));
     options.AddPolicy("PatientAccess", policy => policy.RequireRole("Patient"));
-    // Add more policies as needed
 });
 
 // 6. Register custom services
@@ -105,10 +147,6 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(
         policy =>
         {
-            // THIS IS CRUCIAL:
-            // Ensure this exactly matches the URL of your Vue.js development server.
-            // It should be 'http://localhost:5173' (or whatever port Vite is running on).
-            // Notice it's HTTP, not HTTPS, for the Vue app's origin.
             policy.WithOrigins("http://localhost:5173")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
@@ -121,19 +159,15 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    // --- START: Swagger UI Configuration for JWT Authorization ---
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Clinic Management API v1");
-        // Removed c.EnableRethinkRequest(); as it's not a recognized method.
-        // The security definition above already enables the 'Authorize' button.
     });
-    // --- END: Swagger UI Configuration for JWT Authorization ---
 }
 
 app.UseHttpsRedirection();
 
-
+app.UseRouting();
 // THIS IS CRUCIAL:
 // It must be placed after UseRouting() (if you have it)
 // and before UseAuthorization() and MapControllers().

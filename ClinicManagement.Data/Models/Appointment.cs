@@ -20,6 +20,7 @@ namespace ClinicManagement.Data.Models
 
         public int? PatientId { get; set; } // Already made nullable for Patient soft delete
 
+
         // --- IMPORTANT CHANGE: Make DoctorId nullable ---
         public int? DoctorId { get; set; }
 

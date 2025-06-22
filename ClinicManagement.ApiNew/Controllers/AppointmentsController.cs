@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization; // For authorization attributes
 using System.Security.Claims; // For accessing user claims (e.g., UserId)
-
+using ClinicManagement.Data;
 using ClinicManagement.Data.Context; // Your DbContext
 using ClinicManagement.Data.Models;   // Your EF Core models
 using ClinicManagement.ApiNew.DTOs.Appointments; // Your Appointment DTOs

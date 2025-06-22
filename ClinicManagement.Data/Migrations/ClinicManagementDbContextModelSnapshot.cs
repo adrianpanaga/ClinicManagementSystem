@@ -286,9 +286,7 @@ namespace ClinicManagement.Data.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
+                        .HasColumnType("datetime");
 
                     b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("date");
@@ -314,9 +312,7 @@ namespace ClinicManagement.Data.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .HasMaxLength(50)
@@ -660,10 +656,6 @@ namespace ClinicManagement.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int")
-                        .HasColumnName("RoleID");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -687,9 +679,22 @@ namespace ClinicManagement.Data.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.UserRole", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "RoleId");
+
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("UserRoles", (string)null);
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.Vendor", b =>
@@ -743,6 +748,43 @@ namespace ClinicManagement.Data.Migrations
                         .HasName("PK__Vendors__FC8653AD1D3DE96A");
 
                     b.ToTable("Vendors");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.VerificationCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ContactMethod")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("VerificationCodes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -812,21 +854,6 @@ namespace ClinicManagement.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserLogins", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("UserRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
@@ -943,13 +970,9 @@ namespace ClinicManagement.Data.Migrations
 
             modelBuilder.Entity("ClinicManagement.Data.Models.Patient", b =>
                 {
-                    b.HasOne("ClinicManagement.Data.Models.User", "User")
+                    b.HasOne("ClinicManagement.Data.Models.User", null)
                         .WithOne("Patient")
-                        .HasForeignKey("ClinicManagement.Data.Models.Patient", "UserId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("FK_Patients_Users_UserId_New");
-
-                    b.Navigation("User");
+                        .HasForeignKey("ClinicManagement.Data.Models.Patient", "UserId");
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.StaffDetail", b =>
@@ -957,6 +980,7 @@ namespace ClinicManagement.Data.Migrations
                     b.HasOne("ClinicManagement.Data.Models.User", "User")
                         .WithMany("StaffDetails")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("FK_StaffDetails_Users_UserId_New");
 
                     b.Navigation("User");
@@ -985,15 +1009,34 @@ namespace ClinicManagement.Data.Migrations
                     b.Navigation("Staff");
                 });
 
-            modelBuilder.Entity("ClinicManagement.Data.Models.User", b =>
+            modelBuilder.Entity("ClinicManagement.Data.Models.UserRole", b =>
                 {
                     b.HasOne("ClinicManagement.Data.Models.Role", "Role")
-                        .WithMany("Users")
+                        .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Users__RoleID__45F365D3_New");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ClinicManagement.Data.Models.User", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.VerificationCode", b =>
+                {
+                    b.HasOne("ClinicManagement.Data.Models.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -1016,21 +1059,6 @@ namespace ClinicManagement.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("ClinicManagement.Data.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
-                {
-                    b.HasOne("ClinicManagement.Data.Models.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ClinicManagement.Data.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1076,7 +1104,7 @@ namespace ClinicManagement.Data.Migrations
 
             modelBuilder.Entity("ClinicManagement.Data.Models.Role", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.Service", b =>
@@ -1098,6 +1126,8 @@ namespace ClinicManagement.Data.Migrations
                     b.Navigation("Patient");
 
                     b.Navigation("StaffDetails");
+
+                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.Vendor", b =>
