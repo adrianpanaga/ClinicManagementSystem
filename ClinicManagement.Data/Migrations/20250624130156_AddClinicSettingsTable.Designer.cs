@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManagement.Data.Migrations
 {
     [DbContext(typeof(ClinicManagementDbContext))]
-    [Migration("20250622014830_InitialCreateV3")]
-    partial class InitialCreateV3
+    [Migration("20250624130156_AddClinicSettingsTable")]
+    partial class AddClinicSettingsTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -78,6 +78,50 @@ namespace ClinicManagement.Data.Migrations
                     b.HasIndex("ServiceId");
 
                     b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Data.Models.ClinicSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<TimeOnly>("CloseTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<TimeOnly>("LunchEndTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("LunchStartTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("OpenTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ClinicSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CloseTime = new TimeOnly(17, 0, 0),
+                            CreatedAt = new DateTime(2025, 6, 24, 10, 0, 0, 0, DateTimeKind.Utc),
+                            LunchEndTime = new TimeOnly(13, 0, 0),
+                            LunchStartTime = new TimeOnly(12, 0, 0),
+                            OpenTime = new TimeOnly(9, 0, 0)
+                        });
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.InventoryItem", b =>
@@ -483,6 +527,152 @@ namespace ClinicManagement.Data.Migrations
                         .HasName("PK__Services__C51BB0EA0B0C46B1");
 
                     b.ToTable("Services");
+
+                    b.HasData(
+                        new
+                        {
+                            ServiceId = 1,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Routine physicals, well-woman exams, and age-appropriate screenings for conditions like diabetes or high blood pressure.",
+                            Price = 100m,
+                            ServiceName = "General Checkups and Screenings",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 2,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Addressing colds, flu, ear infections, skin rashes, and other minor ailments.",
+                            Price = 100m,
+                            ServiceName = "Treatment of Common Illnesses",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 3,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Providing vaccinations for children and adults, including flu shots and other recommended immunizations.",
+                            Price = 100m,
+                            ServiceName = "Vaccinations",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 4,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Helping patients manage conditions like diabetes, hypertension, and asthma. ",
+                            Price = 100m,
+                            ServiceName = "Chronic Disease Management",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 5,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Care for heart conditions.",
+                            Price = 300m,
+                            ServiceName = "Cardiology",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 6,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Skin-related issues and treatments.",
+                            Price = 300m,
+                            ServiceName = "Dermatology",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 7,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Musculoskeletal problems and injuries.",
+                            Price = 300m,
+                            ServiceName = "Orthopedics",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 8,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Rehabilitation and pain management.",
+                            Price = 300m,
+                            ServiceName = "Physical Therapy",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 9,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Foot and ankle care.",
+                            Price = 300m,
+                            ServiceName = "Podiatry",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 10,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Treatment of related conditions.",
+                            Price = 300m,
+                            ServiceName = "ENT (Ear, Nose, and Throat)",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 11,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Women's health and prenatal care.",
+                            Price = 300m,
+                            ServiceName = "Gynecology and Obstetrics",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 12,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Eye care.",
+                            Price = 300m,
+                            ServiceName = "Ophthalmology",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 13,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Oral health and dental procedures.",
+                            Price = 300m,
+                            ServiceName = "Dentistry",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 14,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Counseling, therapy, and psychiatric care.",
+                            Price = 200m,
+                            ServiceName = "Mental Health Services",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 15,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Support for substance abuse and addiction recovery.",
+                            Price = 200m,
+                            ServiceName = "Addiction Services",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            ServiceId = 16,
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Blood work, urine tests, imaging (X-rays, ultrasounds), and other diagnostic procedures.",
+                            Price = 200m,
+                            ServiceName = "Laboratory and Diagnostic Services",
+                            UpdatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.StaffDetail", b =>
@@ -550,6 +740,164 @@ namespace ClinicManagement.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("StaffDetails");
+
+                    b.HasData(
+                        new
+                        {
+                            StaffId = 101,
+                            ContactNumber = "09123456789",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "ava.chen@clinic.com",
+                            FirstName = "Ava",
+                            IsDeleted = false,
+                            JobTitle = "General Practitioner",
+                            LastName = "Chen",
+                            Specialization = "Family Medicine"
+                        },
+                        new
+                        {
+                            StaffId = 102,
+                            ContactNumber = "09234567890",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "ben.roberts@clinic.com",
+                            FirstName = "Ben",
+                            IsDeleted = false,
+                            JobTitle = "General Practitioner",
+                            LastName = "Roberts",
+                            Specialization = "Internal Medicine"
+                        },
+                        new
+                        {
+                            StaffId = 103,
+                            ContactNumber = "09345678901",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "clara.garcia@clinic.com",
+                            FirstName = "Clara",
+                            IsDeleted = false,
+                            JobTitle = "Cardiologist",
+                            LastName = "Garcia",
+                            Specialization = "Cardiology"
+                        },
+                        new
+                        {
+                            StaffId = 104,
+                            ContactNumber = "09456789012",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "david.lee@clinic.com",
+                            FirstName = "David",
+                            IsDeleted = false,
+                            JobTitle = "Dermatologist",
+                            LastName = "Lee",
+                            Specialization = "Dermatology"
+                        },
+                        new
+                        {
+                            StaffId = 105,
+                            ContactNumber = "09567890123",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "emily.wang@clinic.com",
+                            FirstName = "Emily",
+                            IsDeleted = false,
+                            JobTitle = "Orthopedic Surgeon",
+                            LastName = "Wang",
+                            Specialization = "Orthopedics"
+                        },
+                        new
+                        {
+                            StaffId = 106,
+                            ContactNumber = "09678901234",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "frank.miller@clinic.com",
+                            FirstName = "Frank",
+                            IsDeleted = false,
+                            JobTitle = "Physical Therapist",
+                            LastName = "Miller",
+                            Specialization = "Physical Therapy"
+                        },
+                        new
+                        {
+                            StaffId = 107,
+                            ContactNumber = "09789012345",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "grace.kim@clinic.com",
+                            FirstName = "Grace",
+                            IsDeleted = false,
+                            JobTitle = "Podiatrist",
+                            LastName = "Kim",
+                            Specialization = "Podiatry"
+                        },
+                        new
+                        {
+                            StaffId = 108,
+                            ContactNumber = "09890123456",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "henry.nguyen@clinic.com",
+                            FirstName = "Henry",
+                            IsDeleted = false,
+                            JobTitle = "ENT Specialist",
+                            LastName = "Nguyen",
+                            Specialization = "Otorhinolaryngology (ENT)"
+                        },
+                        new
+                        {
+                            StaffId = 109,
+                            ContactNumber = "09901234567",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "isabella.patel@clinic.com",
+                            FirstName = "Isabella",
+                            IsDeleted = false,
+                            JobTitle = "Obstetrician-Gynecologist",
+                            LastName = "Patel",
+                            Specialization = "Gynecology & Obstetrics"
+                        },
+                        new
+                        {
+                            StaffId = 110,
+                            ContactNumber = "09012345678",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "jack.davis@clinic.com",
+                            FirstName = "Jack",
+                            IsDeleted = false,
+                            JobTitle = "Ophthalmologist",
+                            LastName = "Davis",
+                            Specialization = "Ophthalmology"
+                        },
+                        new
+                        {
+                            StaffId = 111,
+                            ContactNumber = "09102345678",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "kara.lopez@clinic.com",
+                            FirstName = "Kara",
+                            IsDeleted = false,
+                            JobTitle = "Dentist",
+                            LastName = "Lopez",
+                            Specialization = "Dentistry"
+                        },
+                        new
+                        {
+                            StaffId = 112,
+                            ContactNumber = "09213456789",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "liam.martinez@clinic.com",
+                            FirstName = "Liam",
+                            IsDeleted = false,
+                            JobTitle = "Psychiatrist",
+                            LastName = "Martinez",
+                            Specialization = "Psychiatry"
+                        },
+                        new
+                        {
+                            StaffId = 113,
+                            ContactNumber = "09324567890",
+                            CreatedAt = new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "mia.wilson@clinic.com",
+                            FirstName = "Mia",
+                            IsDeleted = false,
+                            JobTitle = "Addiction Counselor",
+                            LastName = "Wilson",
+                            Specialization = "Addiction Medicine"
+                        });
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.StockTransaction", b =>

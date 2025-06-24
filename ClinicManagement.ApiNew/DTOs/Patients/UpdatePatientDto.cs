@@ -1,5 +1,6 @@
 ﻿// Location: C:\Users\AdrianPanaga\NewClinicApi\ClinicManagement.ApiNew\DTOs\Patients\UpdatePatientDto.cs
 
+using ClinicManagement.ApiNew.DTOs.util;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization; // Added for JsonConverter

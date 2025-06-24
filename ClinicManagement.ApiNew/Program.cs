@@ -42,7 +42,7 @@ builder.Services.AddIdentity<ClinicManagement.Data.Models.User, ClinicManagement
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new ClinicManagement.ApiNew.DTOs.Patients.DateOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new ClinicManagement.ApiNew.DTOs.util.DateOnlyJsonConverter());
     });
 
 // 3. Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

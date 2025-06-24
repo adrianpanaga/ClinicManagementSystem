@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ClinicManagement.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreateV3 : Migration
+    public partial class InitialCreateWithSeeding : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -487,6 +487,49 @@ namespace ClinicManagement.Data.Migrations
                     { 7, null, new DateTime(2023, 1, 1, 10, 0, 0, 0, DateTimeKind.Utc), "InventoryManager", "INVENTORYMANAGER", new DateTime(2023, 1, 1, 10, 0, 0, 0, DateTimeKind.Utc) }
                 });
 
+            migrationBuilder.InsertData(
+                table: "Services",
+                columns: new[] { "ServiceID", "CreatedAt", "Description", "Price", "ServiceName", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Routine physicals, well-woman exams, and age-appropriate screenings for conditions like diabetes or high blood pressure.", 100m, "General Checkups and Screenings", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 2, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Addressing colds, flu, ear infections, skin rashes, and other minor ailments.", 100m, "Treatment of Common Illnesses", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 3, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Providing vaccinations for children and adults, including flu shots and other recommended immunizations.", 100m, "Vaccinations", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 4, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Helping patients manage conditions like diabetes, hypertension, and asthma. ", 100m, "Chronic Disease Management", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 5, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Care for heart conditions.", 300m, "Cardiology", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 6, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Skin-related issues and treatments.", 300m, "Dermatology", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 7, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Musculoskeletal problems and injuries.", 300m, "Orthopedics", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 8, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Rehabilitation and pain management.", 300m, "Physical Therapy", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 9, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Foot and ankle care.", 300m, "Podiatry", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 10, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Treatment of related conditions.", 300m, "ENT (Ear, Nose, and Throat)", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 11, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Women's health and prenatal care.", 300m, "Gynecology and Obstetrics", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 12, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Eye care.", 300m, "Ophthalmology", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 13, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Oral health and dental procedures.", 300m, "Dentistry", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 14, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Counseling, therapy, and psychiatric care.", 200m, "Mental Health Services", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 15, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Support for substance abuse and addiction recovery.", 200m, "Addiction Services", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) },
+                    { 16, new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "Blood work, urine tests, imaging (X-rays, ultrasounds), and other diagnostic procedures.", 200m, "Laboratory and Diagnostic Services", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc) }
+                });
+
+            migrationBuilder.InsertData(
+                table: "StaffDetails",
+                columns: new[] { "StaffID", "ContactNumber", "CreatedAt", "Email", "FirstName", "JobTitle", "LastName", "MiddleName", "Specialization", "UpdatedAt", "UserID" },
+                values: new object[,]
+                {
+                    { 101, "09123456789", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "ava.chen@clinic.com", "Ava", "General Practitioner", "Chen", null, "Family Medicine", null, null },
+                    { 102, "09234567890", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "ben.roberts@clinic.com", "Ben", "General Practitioner", "Roberts", null, "Internal Medicine", null, null },
+                    { 103, "09345678901", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "clara.garcia@clinic.com", "Clara", "Cardiologist", "Garcia", null, "Cardiology", null, null },
+                    { 104, "09456789012", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "david.lee@clinic.com", "David", "Dermatologist", "Lee", null, "Dermatology", null, null },
+                    { 105, "09567890123", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "emily.wang@clinic.com", "Emily", "Orthopedic Surgeon", "Wang", null, "Orthopedics", null, null },
+                    { 106, "09678901234", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "frank.miller@clinic.com", "Frank", "Physical Therapist", "Miller", null, "Physical Therapy", null, null },
+                    { 107, "09789012345", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "grace.kim@clinic.com", "Grace", "Podiatrist", "Kim", null, "Podiatry", null, null },
+                    { 108, "09890123456", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "henry.nguyen@clinic.com", "Henry", "ENT Specialist", "Nguyen", null, "Otorhinolaryngology (ENT)", null, null },
+                    { 109, "09901234567", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "isabella.patel@clinic.com", "Isabella", "Obstetrician-Gynecologist", "Patel", null, "Gynecology & Obstetrics", null, null },
+                    { 110, "09012345678", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "jack.davis@clinic.com", "Jack", "Ophthalmologist", "Davis", null, "Ophthalmology", null, null },
+                    { 111, "09102345678", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "kara.lopez@clinic.com", "Kara", "Dentist", "Lopez", null, "Dentistry", null, null },
+                    { 112, "09213456789", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "liam.martinez@clinic.com", "Liam", "Psychiatrist", "Martinez", null, "Psychiatry", null, null },
+                    { 113, "09324567890", new DateTime(2025, 6, 23, 10, 0, 0, 0, DateTimeKind.Utc), "mia.wilson@clinic.com", "Mia", "Addiction Counselor", "Wilson", null, "Addiction Medicine", null, null }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_DoctorID",
                 table: "Appointments",
@@ -560,6 +603,7 @@ namespace ClinicManagement.Data.Migrations
                 name: "IX_Patients_UserId",
                 table: "Patients",
                 column: "UserId",
+                unique: true,
                 filter: "[UserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(

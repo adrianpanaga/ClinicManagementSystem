@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ClinicManagement.ApiNew.DTOs.Patients
+namespace ClinicManagement.ApiNew.DTOs.util
 {
     /// <summary>
     /// Custom JsonConverter for System.DateOnly to handle JSON serialization/deserialization.

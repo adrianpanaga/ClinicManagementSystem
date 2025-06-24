@@ -4,6 +4,7 @@ using ClinicManagement.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManagement.Data.Migrations
 {
     [DbContext(typeof(ClinicManagementDbContext))]
-    partial class ClinicManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250623032740_InitialCreateWithSeeding")]
+    partial class InitialCreateWithSeeding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,50 +78,6 @@ namespace ClinicManagement.Data.Migrations
                     b.HasIndex("ServiceId");
 
                     b.ToTable("Appointments");
-                });
-
-            modelBuilder.Entity("ClinicManagement.Data.Models.ClinicSetting", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<TimeOnly>("CloseTime")
-                        .HasColumnType("time");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<TimeOnly>("LunchEndTime")
-                        .HasColumnType("time");
-
-                    b.Property<TimeOnly>("LunchStartTime")
-                        .HasColumnType("time");
-
-                    b.Property<TimeOnly>("OpenTime")
-                        .HasColumnType("time");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ClinicSettings");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CloseTime = new TimeOnly(17, 0, 0),
-                            CreatedAt = new DateTime(2025, 6, 24, 10, 0, 0, 0, DateTimeKind.Utc),
-                            LunchEndTime = new TimeOnly(13, 0, 0),
-                            LunchStartTime = new TimeOnly(12, 0, 0),
-                            OpenTime = new TimeOnly(9, 0, 0)
-                        });
                 });
 
             modelBuilder.Entity("ClinicManagement.Data.Models.InventoryItem", b =>

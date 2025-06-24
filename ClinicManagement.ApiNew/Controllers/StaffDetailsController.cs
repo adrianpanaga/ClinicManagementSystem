@@ -129,6 +129,30 @@ namespace ClinicManagement.ApiNew.Controllers
             return MapToStaffDetailDto(staffDetail);
         }
 
+        /// <summary>
+        /// Gets a list of doctors available for public booking.
+        /// This endpoint does NOT require authentication.
+        /// </summary>
+        /// <returns>A list of DoctorForBookingDto.</returns>
+        [HttpGet("ForBooking")] // Route: GET /api/StaffDetails/ForBooking
+        [AllowAnonymous] // IMPORTANT: Allows unauthenticated access
+        public async Task<ActionResult<IEnumerable<DoctorForBookingDto>>> GetDoctorsForBooking()
+        {
+            var doctors = await _context.StaffDetails
+                .Where(s => !string.IsNullOrEmpty(s.Specialization) && !s.IsDeleted) // Filter for specialists (doctors) and not deleted
+                .Select(s => new DoctorForBookingDto
+                {
+                    StaffId = s.StaffId,
+                    FirstName = s.FirstName,
+                    LastName = s.LastName,
+                    JobTitle = s.JobTitle,
+                    Specialization = s.Specialization
+                })
+                .ToListAsync();
+
+            return Ok(doctors);
+        }
+
         // PUT: api/StaffDetails/5
         /// <summary>
         /// Updates an existing staff detail record.

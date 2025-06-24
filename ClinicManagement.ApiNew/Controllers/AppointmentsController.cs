@@ -217,6 +217,127 @@ namespace ClinicManagement.ApiNew.Controllers
             return MapToAppointmentDto(appointment);
         }
 
+        /// <summary>
+        /// Gets available time slots for booking an appointment.
+        /// This endpoint does NOT require authentication for the public patient portal.
+        /// </summary>
+        /// <param name="serviceId">The ID of the service.</param>
+        /// <param name="date">The date for the appointment (format:YYYY-MM-DD).</param>
+        /// <param name="doctorId">Optional: The ID of a specific doctor (StaffId).</param>
+        /// <returns>A list of available time slots (e.g., "09:00", "09:30").</returns>
+        [HttpGet("AvailableSlots")] // Route: GET /api/Appointments/AvailableSlots
+        [AllowAnonymous] // IMPORTANT: Allows unauthenticated access for public portal
+        public async Task<ActionResult<IEnumerable<string>>> GetAvailableSlots(
+            [FromQuery] int serviceId,
+            [FromQuery] DateOnly date, // Ensure DateOnly is handled correctly by your serializer/binder
+            [FromQuery] int? doctorId = null) // Optional doctorId
+        {
+
+            // NEW: Retrieve clinic settings from the database
+            var clinicSettings = await _context.ClinicSettings.FirstOrDefaultAsync();
+            if (clinicSettings == null)
+            {
+                return StatusCode(500, "Clinic operating hours not configured in the database.");
+            }
+            
+            // --- Clinic Operating Hours (Example: 9 AM to 5 PM) ---
+            TimeOnly clinicOpenTime = clinicSettings.OpenTime;
+            TimeOnly clinicCloseTime = clinicSettings.CloseTime;
+
+            // --- NEW: Lunch Break (11:30 AM to 1:30 PM) ---
+            TimeOnly lunchStart = clinicSettings.LunchStartTime;
+            TimeOnly lunchEnd = clinicSettings.LunchEndTime;
+
+            // Assume default slot duration (e.g., 30 minutes)
+            TimeSpan appointmentDuration = TimeSpan.FromMinutes(30);
+
+
+            // --- Filter out past dates/times ---
+            DateTime currentDateTime = DateTime.Now;
+            DateOnly todayDate = DateOnly.FromDateTime(currentDateTime);
+            TimeOnly currentTime = TimeOnly.FromDateTime(currentDateTime);
+
+            // --- Get existing appointments ---
+            var existingAppointmentsQuery = _context.Appointments
+                .Where(a => DateOnly.FromDateTime(a.AppointmentDateTime) == date &&
+                            a.Status != "Cancelled");
+
+
+            if (doctorId.HasValue)
+            {
+                existingAppointmentsQuery = existingAppointmentsQuery.Where(a => a.DoctorId == doctorId.Value);
+
+                var doctor = await _context.StaffDetails.FirstOrDefaultAsync(s => s.StaffId == doctorId.Value);
+                if (doctor == null || string.IsNullOrEmpty(doctor.Specialization))
+                {
+                    return Ok(new List<string>()); // No slots if specified ID isn't a valid doctor
+                }
+            }
+
+            var existingAppointments = await existingAppointmentsQuery.ToListAsync();
+
+            var occupiedTimeRanges = new List<(DateTime Start, DateTime End)>();
+            foreach (var appt in existingAppointments)
+            {
+                DateTime apptStart = appt.AppointmentDateTime;
+                DateTime apptEnd = apptStart.Add(appointmentDuration);
+                occupiedTimeRanges.Add((apptStart, apptEnd));
+            }
+
+            List<string> availableSlots = new List<string>();
+            DateTime currentSlotCandidateStart = date.ToDateTime(clinicOpenTime);
+
+            while (currentSlotCandidateStart.TimeOfDay.Add(appointmentDuration) <= clinicCloseTime.ToTimeSpan())
+            {
+                DateTime currentSlotCandidateEnd = currentSlotCandidateStart.Add(appointmentDuration);
+                bool isOccupied = false;
+
+                // 1. Check if this potential slot is in the past
+                if (date == todayDate && currentSlotCandidateStart < currentDateTime)
+                {
+                    isOccupied = true;
+                }
+
+                // 2. NEW: Check for overlap with lunch break
+                if (!isOccupied)
+                {
+                    TimeOnly slotStartTime = TimeOnly.FromDateTime(currentSlotCandidateStart);
+                    TimeOnly slotEndTime = TimeOnly.FromDateTime(currentSlotCandidateEnd);
+
+                    // Overlap occurs if (slot starts before lunch ends AND slot ends after lunch starts)
+                    // This correctly excludes any slot that touches or falls within the lunch period
+                    if (slotStartTime < lunchEnd && slotEndTime > lunchStart)
+                    {
+                        isOccupied = true;
+                    }
+                }
+
+                // 3. Check against existing appointments
+                if (!isOccupied)
+                {
+                    foreach (var occupiedRange in occupiedTimeRanges)
+                    {
+                        if (currentSlotCandidateStart < occupiedRange.Item2 && currentSlotCandidateEnd > occupiedRange.Item1)
+                        {
+                            isOccupied = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!isOccupied)
+                {
+                    availableSlots.Add(currentSlotCandidateStart.ToString("HH:mm"));
+                }
+
+                // Move to the next 30-min block to check
+                currentSlotCandidateStart = currentSlotCandidateStart.Add(appointmentDuration);
+            }
+
+            return Ok(availableSlots);
+        }
+
+
         // PUT: api/Appointments/5
         /// <summary>
         /// Updates an existing appointment.
